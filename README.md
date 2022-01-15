@@ -1,2 +1,3 @@
-# cargo-parcel
-Frontend Framework for Cargo
+# Cargo Parcel
+
+Dynamic Frontend Components for Cargo
