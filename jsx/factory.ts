@@ -1,63 +1,19 @@
 import "./types.ts";
 
-interface ElementAttributes {
+export interface ElementAttributes {
   [attribute: string]: unknown;
 }
 
-const selfClosingTags = [
-  "area",
-  "base",
-  "br",
-  "col",
-  "embed",
-  "hr",
-  "img",
-  "input",
-  "link",
-  "meta",
-  "param",
-  "source",
-  "track",
-  "wbr",
-];
-
 export function factory(
-  tag: unknown,
+  tag: (props: JSX.ComponentProps) => string | JSX.Element,
   attributes: ElementAttributes,
-  ...childrens: Node[]
+  ...children: string[] | JSX.Element[]
 ) {
   if (typeof tag === "string") {
-    return renderElement(tag, attributes, childrens);
+    return { tag, ...attributes, children };
   }
   if (typeof tag === "function") {
-    return tag(attributes, childrens);
+    return tag({ ...attributes, children });
   }
-  return "";
-}
-
-function renderElement(
-  tag: string,
-  attributes: ElementAttributes,
-  childrens: unknown[],
-): string {
-  if (selfClosingTags.includes(tag)) {
-    return `<${tag}${handleAttributes(attributes)} />`;
-  }
-  return `<${tag}${handleAttributes(attributes)}>${
-    childrens.join("")
-  }</${tag}>`;
-}
-
-function handleAttributes(attributes: ElementAttributes) {
-  let attributesString = "";
-  for (const key in attributes) {
-    const attribute = attributes[key];
-    if (typeof attribute === "string") {
-      attributesString += ` ${key}="${attribute}"`;
-    }
-    if (typeof attribute === "boolean") {
-      attributesString += ` ${key}`;
-    }
-  }
-  return attributesString;
+  return {};
 }
