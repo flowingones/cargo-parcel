@@ -5,8 +5,11 @@ declare namespace JSX {
     children: string[] | Element[];
   };
 
-  interface IntrinsicElements extends HtmlElementMap, SvgElementMap {}
+  interface IntrinsicElements {
+    [key: string]: unknown;
+  }
 
+  /*
   type HtmlElementMap = {
     [K in keyof HTMLElementTagNameMap]: {
       [k: string]: unknown;
@@ -18,6 +21,7 @@ declare namespace JSX {
       [k: string]: unknown;
     };
   };
+  */
 
   interface ComponentProps {
     children?: string[] | Element[];
