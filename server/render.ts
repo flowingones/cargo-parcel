@@ -23,26 +23,28 @@ export function render(
   children?: string[] | JSX.Element[],
 ): string {
   if (selfClosingTags.includes(tag)) {
-    return `<${tag}${props ? handleAttributes(props) : ""} />`;
+    return `<${tag}${props ? stringifyAttributes(props) : ""} />`;
   }
-  return `<${tag}${props ? handleAttributes(props) : ""}>${
+  return `<${tag}${props ? stringifyAttributes(props) : ""}>${
     children?.length ? renderChildren(children) : ""
   }</${tag}>`;
 }
 
 function renderChildren(children: string[] | JSX.Element[]) {
+  let str = "";
   for (const child of children) {
     if (typeof child === "string") {
-      console.log(child);
-    } else {
-      const { tag, children, ...props } = child;
-      return render(tag, props, children);
+      str += child;
     }
-    console.log(child);
+    if ((<JSX.Element> child).tag) {
+      const { tag, children, ...props } = <JSX.Element> child;
+      str += render(tag, props, children);
+    }
   }
+  return str;
 }
 
-function handleAttributes(attributes: ElementAttributes) {
+function stringifyAttributes(attributes: ElementAttributes) {
   let attributesString = "";
   for (const key in attributes) {
     const attribute = attributes[key];
