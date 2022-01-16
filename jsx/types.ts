@@ -1,5 +1,3 @@
-/// <reference lib="DOM" />
-
 declare namespace JSX {
   type Element = {
     tag: string;
