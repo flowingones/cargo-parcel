@@ -1,16 +1,20 @@
 import { Get } from "../deps.ts";
 import { render } from "../server/render.ts";
-export function ParcelPage(path: string, element: JSX.Element) {
-  /*
-   * Build and register route to frontend bundle
-   */
-  Get("/{bundlen-name}-{hash}.js", () => {
-    return new Response("console.log('Hello')", {
-      headers: {
-        "content-type": "application/javascript",
-      },
+
+export function Page(
+  path: string,
+  element: JSX.Element,
+  options = { static: true },
+) {
+  if (!options.static) {
+    Get("/parcel-bundle}-{hash}.js", () => {
+      return new Response("console.log('Hello')", {
+        headers: {
+          "content-type": "application/javascript",
+        },
+      });
     });
-  });
+  }
 
   Get(path, () => {
     const { tag, children, ...props } = element;
@@ -21,3 +25,8 @@ export function ParcelPage(path: string, element: JSX.Element) {
     });
   });
 }
+
+/*
+ * @deprecated Will be removed in version 0.1.15
+ */
+export const ParcelPage = Page;
