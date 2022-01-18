@@ -11,6 +11,7 @@ export function Page(
       return new Response("console.log('Hello')", {
         headers: {
           "content-type": "application/javascript",
+          "Cache-Control": "max-age=3600",
         },
       });
     });
