@@ -1,1 +1,1 @@
-export { Get } from "https://deno.land/x/cargo@0.1.14/http/mod.ts";
+export { Get } from "https://deno.land/x/cargo@0.1.15/http/mod.ts";
