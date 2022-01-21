@@ -2,6 +2,7 @@ declare namespace JSX {
   type Element = {
     tag: string;
     [type: string]: unknown;
+    elementId?: string;
     children: string[] | Element[];
   };
 
