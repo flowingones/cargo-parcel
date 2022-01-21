@@ -1,5 +1,11 @@
-const { files, diagnostics } = await Deno.emit("./boot.ts", {
-  bundle: "module",
-});
+/// <reference lib="deno.unstable" />
 
-console.log(files);
+export async function bundle(path: string): Promise<string> {
+  return (await Deno.emit(path, {
+    bundle: "module",
+    compilerOptions: {
+      "jsx": "react",
+      "jsxFactory": "factory",
+    },
+  })).files["deno:///bundle.js"];
+}
