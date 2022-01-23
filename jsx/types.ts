@@ -32,4 +32,8 @@ declare namespace JSX {
   interface Component {
     (props: ComponentProps): Element;
   }
+
+  interface EventProps {
+    "on:click": () => void;
+  }
 }
