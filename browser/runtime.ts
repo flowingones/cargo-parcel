@@ -11,7 +11,7 @@ export interface RenderParams {
 
 const d: Document = document;
 
-export function render(
+export function r(
   p: RenderParams,
 ): HTMLElement {
   const { tag, children, ...a } = p.e;
@@ -26,8 +26,8 @@ export function render(
   for (const c of children) {
     if (typeof c === "string") {
       setText(n, c);
-    } else {
-      appendChild(n, render({ e: c, p: n }));
+    } else if (c?.tag) {
+      appendChild(n, r({ e: c, p: n }));
     }
   }
 
@@ -47,3 +47,13 @@ function setText(n: Node, t: string) {
 function appendChild(n: Node, c: Node) {
   n.appendChild(c);
 }
+
+async function link(i: string) {
+  const component = (await import(i))[i];
+  r({
+    e: component(),
+    p: document.body,
+  });
+}
+
+link("/home.js");
