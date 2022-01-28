@@ -50,10 +50,7 @@ function appendChild(n: Node, c: Node) {
 
 async function link(i: string) {
   const component = (await import(i))[i];
-  r({
-    e: component(),
-    p: document.body,
-  });
+  console.log(component["home"]);
 }
 
 link("/home.js");
