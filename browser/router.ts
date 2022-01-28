@@ -3,8 +3,6 @@
 /// <reference lib="DOM" />
 import "../jsx/types.ts";
 
-declare const routes: Route[];
-
 interface Route {
   path: string;
   data: unknown;
@@ -12,9 +10,9 @@ interface Route {
 
 const _routes: Route[] = [];
 
-async function load(p: string): Promise<JSX.Component> {
+async function load(p: string): Promise<JSX.Element> {
   const c = await import(`/${p}.js`);
-  return <JSX.Component> c[c];
+  return <JSX.Element> c[c];
 }
 
 function resolve(path: string) {
@@ -24,6 +22,23 @@ function resolve(path: string) {
   if (toResolve) {
     return load(toResolve.path);
   }
+  throw new Error("No route found!");
 }
 
-export function goto(path: string) {}
+function goto(path: string) {
+  console.log(path);
+  throw new Error("Not implemented yet!");
+}
+
+function routes(routes?: Route[]) {
+  if (routes) {
+    _routes.push(...routes);
+  }
+  return _routes;
+}
+
+export const Router = {
+  resolve,
+  goto,
+  routes,
+};

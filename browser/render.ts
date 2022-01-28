@@ -2,10 +2,16 @@
 
 export interface RenderParams {
   e: JSX.Element;
-  p: Node;
+  p: HTMLElement;
 }
 
 const d: Document = document;
+
+export function h(
+  p: RenderParams,
+) {
+  console.log(p.p.querySelector(p.e.tag));
+}
 
 export function r(
   p: RenderParams,
