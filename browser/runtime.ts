@@ -49,8 +49,8 @@ function appendChild(n: Node, c: Node) {
 }
 
 async function link(i: string) {
-  const component = (await import(i))[i];
+  const component = (await import(`/${i}.js`))[i];
   console.log(component);
 }
 
-link("/home.js");
+link("home");
