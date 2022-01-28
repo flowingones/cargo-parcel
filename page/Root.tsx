@@ -16,6 +16,9 @@ export function Root(props: RootProps): JSX.Element {
         {props.scripts?.map((script) => {
           return <script type="module" src={script}></script>;
         })}
+        {props.styles?.map((style) => {
+          return <link rel="stylesheet" href={style} />;
+        })}
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Welcome to your Cargo Website!</title>
