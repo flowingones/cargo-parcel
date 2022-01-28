@@ -1,14 +1,15 @@
 declare namespace JSX {
+  type Node = string | Element | undefined | null;
+
   type Element = {
     tag: string;
     [type: string]: unknown;
-    elementId?: string;
-    children: string[] | Element[];
+    children: Node[];
   };
 
-  interface IntrinsicElements {
+  type IntrinsicElements = {
     [key: string]: unknown;
-  }
+  };
 
   /*
   type HtmlElementMap = {
@@ -24,14 +25,14 @@ declare namespace JSX {
   };
   */
 
-  interface ComponentProps {
-    children?: string[] | Element[];
+  type ComponentProps = {
+    children?: Node[];
     [type: string]: unknown;
-  }
+  };
 
-  interface Component {
+  type Component = {
     (props: ComponentProps): Element;
-  }
+  };
 
   interface EventProps {
     "on:click": () => void;
