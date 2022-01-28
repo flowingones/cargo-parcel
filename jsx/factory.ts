@@ -5,9 +5,9 @@ export interface ElementAttributes {
 }
 
 export function factory(
-  tag: (props: JSX.ComponentProps) => string | JSX.Element,
+  tag: (props: JSX.ComponentProps) => JSX.Node,
   attributes: ElementAttributes,
-  ...children: JSX.Element[] | JSX.Element[][]
+  ...children: JSX.Node[] | JSX.Node[][]
 ) {
   if (typeof tag === "string") {
     return { tag, ...attributes, children: unwrap(children) };
@@ -18,9 +18,14 @@ export function factory(
   return {};
 }
 
-function unwrap(children: JSX.Element[] | JSX.Element[][]): JSX.Element[] {
-  if (Array.isArray(children[0])) {
-    return children[0];
+function unwrap(children: JSX.Node[] | JSX.Node[][]): JSX.Node[] {
+  const flatten: JSX.Node[] = [];
+  for (const child of children) {
+    if (Array.isArray(child)) {
+      flatten.push(...child);
+    } else {
+      flatten.push(child);
+    }
   }
-  return <JSX.Element[]> children;
+  return flatten;
 }
