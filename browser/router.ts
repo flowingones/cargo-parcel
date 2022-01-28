@@ -12,8 +12,8 @@ const _routes: Route[] = [];
 
 async function load(p: string): Promise<JSX.Element> {
   const c = await import(`/${p}.js`);
-  console.log(c);
-  return <JSX.Element> c[p];
+  console.log(c[p]);
+  return <JSX.Element> c[p]();
 }
 
 async function resolve(path: string): Promise<JSX.Element> {
