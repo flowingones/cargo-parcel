@@ -20,7 +20,7 @@ const selfClosingTags = [
 export function render(
   tag: string,
   props?: ElementAttributes,
-  children?: string[] | JSX.Element[],
+  children?: JSX.Node[],
 ): string {
   if (selfClosingTags.includes(tag)) {
     return `<${tag}${props ? stringifyAttributes(props) : ""} />`;
@@ -30,13 +30,13 @@ export function render(
   }</${tag}>`;
 }
 
-function renderChildren(children: string[] | JSX.Element[]) {
+function renderChildren(children: JSX.Node[]): string {
   let str = "";
   for (const child of children) {
     if (typeof child === "string") {
       str += child;
     }
-    if ((<JSX.Element> child).tag) {
+    if ((<JSX.Element> child)?.tag) {
       const { tag, children, ...props } = <JSX.Element> child;
       str += render(tag, props, children);
     }
@@ -44,7 +44,7 @@ function renderChildren(children: string[] | JSX.Element[]) {
   return str;
 }
 
-function stringifyAttributes(attributes: ElementAttributes) {
+function stringifyAttributes(attributes: ElementAttributes): string {
   let attributesString = "";
   for (const key in attributes) {
     const attribute = attributes[key];
