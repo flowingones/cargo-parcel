@@ -1,6 +1,7 @@
 /** @jsx factory */
 
 import { factory } from "../mod.ts";
+import { Pages } from "../page/pages.ts";
 
 interface RootProps extends JSX.ComponentProps {
   scripts?: string[];
@@ -24,6 +25,13 @@ export function Root(props: RootProps): JSX.Element {
         <title>Welcome to your Cargo Website!</title>
       </head>
       <body>{props.children}</body>
+      <script type="module">
+        {`import { r } from "./runtime.js";
+        const parcel = new P({
+          root: document,
+          routes: ${Pages.stringify()}
+        });`}
+      </script>
     </html>
   );
 }
