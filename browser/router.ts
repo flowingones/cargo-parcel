@@ -17,7 +17,8 @@ async function load(p: string): Promise<JSX.Element> {
 
 async function resolve(path: string): Promise<JSX.Element> {
   const toResolve = _routes.find((route) => {
-    console.log(route.path === path);
+    console.log(route.path);
+    console.log(path);
     return route.path === path;
   });
   if (toResolve) {
