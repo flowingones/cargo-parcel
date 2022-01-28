@@ -17,12 +17,10 @@ async function load(p: string): Promise<JSX.Element> {
 
 async function resolve(path: string): Promise<JSX.Element> {
   const toResolve = _routes.find((route) => {
-    console.log(route.path);
-    console.log(path);
     return route.path === path;
   });
   if (toResolve) {
-    return await load(toResolve.path);
+    return <JSX.Element> (await load(toResolve.path))[path];
   }
   throw new Error("No route found!");
 }
