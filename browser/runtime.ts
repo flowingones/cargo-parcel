@@ -4,11 +4,7 @@
 
 import "../jsx/types.ts";
 import { h } from "./render.ts";
-import { Router } from "./router.ts";
-
-interface Route {
-  path: string;
-}
+import { Route, Router } from "./router.ts";
 
 interface ParcelOptions {
   root: HTMLElement;
@@ -16,7 +12,9 @@ interface ParcelOptions {
 }
 
 export class P {
-  constructor(private o: ParcelOptions) {}
+  constructor(private o: ParcelOptions) {
+    Router.routes(o.routes);
+  }
 
   async h(name: string): Promise<void> {
     const element = await Router.resolve(name);

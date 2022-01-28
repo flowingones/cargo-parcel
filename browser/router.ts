@@ -3,9 +3,9 @@
 /// <reference lib="DOM" />
 import "../jsx/types.ts";
 
-interface Route {
+export interface Route {
   path: string;
-  data: unknown;
+  data?: unknown;
 }
 
 const _routes: Route[] = [];
