@@ -21,7 +21,7 @@ async function resolve(path: string): Promise<JSX.Element> {
     return route.path === path;
   });
   if (toResolve) {
-    return <JSX.Element> (await load(toResolve.path))[path];
+    return await load(toResolve.path);
   }
   throw new Error("No route found!");
 }
