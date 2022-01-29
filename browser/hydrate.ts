@@ -1,5 +1,5 @@
 import { RenderParams } from "./render.ts";
-import { attr, ev, is } from "./events.ts";
+import { attach, ev, is } from "./events.ts";
 
 export function h(
   p: RenderParams,
@@ -8,7 +8,7 @@ export function h(
 
   for (const k in at) {
     if (is(k)) {
-      attr(p.p, ev(k), <() => void> at[k]);
+      attach(p.p, ev(k), <() => void> at[k]);
     }
   }
 
