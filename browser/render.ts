@@ -11,7 +11,25 @@ export function h(
   p: RenderParams,
 ) {
   const e = p.p.querySelector(p.e.tag);
+  if (e instanceof HTMLElement) {
+    p.p.appendChild(e);
+    let i = 0;
+    for (const child of p.e.children) {
+      hc({
+        i,
+        p: e,
+        e: child,
+      });
+      i++;
+    }
+  } else {
+    throw new Error("Element not found in the DOM!");
+  }
   console.log(e);
+}
+
+function hc(p: { i: number; p: HTMLElement; e: JSX.Node }) {
+  console.log(p);
 }
 
 export function r(
