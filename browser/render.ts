@@ -10,7 +10,8 @@ const d: Document = document;
 export function h(
   p: RenderParams,
 ) {
-  console.log(p);
+  const e = p.p.querySelector(p.e.tag);
+  console.log(e);
 }
 
 export function r(
