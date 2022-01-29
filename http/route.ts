@@ -3,8 +3,7 @@ import "../jsx/types.ts";
 import { Get, name } from "../deps.ts";
 import { render } from "../server/render.ts";
 import { bundle } from "../browser/bundle.ts";
-
-import { Scripts } from "../page/scripts.ts";
+import { Pages } from "../page/pages.ts";
 
 export async function ParcelPage(
   path: string,
@@ -12,9 +11,15 @@ export async function ParcelPage(
 ) {
   const routeName = name(path);
 
+  Pages.add({
+    path: routeName,
+  });
+
   const element = await import(`file://${Deno.cwd()}/${path}`);
   const app = (await bundle(path))["deno:///bundle.js"];
-  const runtime = (await bundle("https://deno.land/std@0.123.0/path/posix.ts"))[
+  const runtime = (await bundle(
+    "https://raw.githubusercontent.com/flowingones/cargo-parcel/dev/browser/runtime.ts",
+  ))[
     "deno:///bundle.js"
   ];
 
@@ -25,10 +30,8 @@ export async function ParcelPage(
 
   const { tag, children, ...props } = root({
     children: [element[routeName]()],
-    scripts: ["runtime.js", ...script.tags],
+    scripts: ["/runtime.js", ...script.tags],
   });
-
-  Scripts.set(script);
 
   Get(`/${routeName}.js`, () => {
     return new Response(app, {
