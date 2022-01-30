@@ -24,3 +24,5 @@ export class P {
     });
   }
 }
+
+export const R = Router;
