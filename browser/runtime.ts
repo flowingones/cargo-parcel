@@ -3,7 +3,7 @@
 /// <reference lib="deno.ns" />
 
 import "../jsx/types.ts";
-import { h } from "./render.ts";
+import { h } from "./hydrate.ts";
 import { Route, Router } from "./router.ts";
 
 interface ParcelOptions {
@@ -24,3 +24,5 @@ export class P {
     });
   }
 }
+
+export const R = Router;

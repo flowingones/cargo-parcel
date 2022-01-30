@@ -26,12 +26,12 @@ export function Root(props: RootProps): JSX.Element {
       </head>
       <body>{props.children}</body>
       <script type="module">
-        {`import { P } from "./runtime.js";
+        {`import { P, R } from "./runtime.js";
         const p = new P({
-          root: document,
+          root: document.body,
           routes: ${Pages.stringify()}
         });
-        p.h("home")`}
+        p.h(R.current())`}
       </script>
     </html>
   );

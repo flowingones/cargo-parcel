@@ -7,13 +7,6 @@ export interface RenderParams {
 
 const d: Document = document;
 
-export function h(
-  p: RenderParams,
-) {
-  const e = p.p.querySelector(p.e.tag);
-  console.log(e);
-}
-
 export function r(
   p: RenderParams,
 ): HTMLElement {

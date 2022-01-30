@@ -10,15 +10,15 @@ export function factory(
   ...children: JSX.Node[] | JSX.Node[][]
 ) {
   if (typeof tag === "string") {
-    return { tag, ...attributes, children: unwrap(children) };
+    return { tag, ...attributes, children: flatten(children) };
   }
   if (typeof tag === "function") {
-    return tag({ ...attributes, children: unwrap(children) });
+    return tag({ ...attributes, children: flatten(children) });
   }
   return {};
 }
 
-function unwrap(children: JSX.Node[] | JSX.Node[][]): JSX.Node[] {
+function flatten(children: JSX.Node[] | JSX.Node[][]): JSX.Node[] {
   const flatten: JSX.Node[] = [];
   for (const child of children) {
     if (Array.isArray(child)) {

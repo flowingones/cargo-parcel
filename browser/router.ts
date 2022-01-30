@@ -1,6 +1,7 @@
+/// <reference lib="DOM" />
+
 /* @jsx factory */
 
-/// <reference lib="DOM" />
 import "../jsx/types.ts";
 
 export interface Route {
@@ -38,8 +39,13 @@ function routes(routes?: Route[]) {
   return _routes;
 }
 
+function current(): string {
+  return window.location.pathname.replace(/^\//, "");
+}
+
 export const Router = {
   resolve,
   goto,
   routes,
+  current,
 };

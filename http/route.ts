@@ -1,6 +1,6 @@
 import "../jsx/types.ts";
 
-import { Get, name } from "../deps.ts";
+import { dirname, Get, name } from "../deps.ts";
 import { render } from "../server/render.ts";
 import { bundle } from "../browser/bundle.ts";
 import { Pages } from "../page/pages.ts";
@@ -18,7 +18,7 @@ export async function ParcelPage(
   const element = await import(`file://${Deno.cwd()}/${path}`);
   const app = (await bundle(path))["deno:///bundle.js"];
   const runtime = (await bundle(
-    "https://raw.githubusercontent.com/flowingones/cargo-parcel/dev/browser/runtime.ts",
+    dirname(import.meta.url) + "/../browser/runtime.ts",
   ))[
     "deno:///bundle.js"
   ];
