@@ -1,7 +1,7 @@
 export { dirname } from "https://deno.land/std@0.123.0/path/mod.ts";
-export { Get } from "https://deno.land/x/cargo@0.1.22/http/mod.ts";
+export { Get } from "https://deno.land/x/cargo@0.1.23/http/mod.ts";
 export {
   extension,
   log,
   name,
-} from "https://deno.land/x/cargo@0.1.22/utils/mod.ts";
+} from "https://deno.land/x/cargo@0.1.23/utils/mod.ts";
