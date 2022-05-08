@@ -1,6 +1,7 @@
 import { Get, name } from "../deps.ts";
 
 import { render, tag, title } from "./deps.ts";
+import { mappedPaths } from "./options.ts";
 
 interface Page {
   path: string;
@@ -14,7 +15,7 @@ export async function StaticPage(
 ) {
   const page = await initPage(pathToPage);
 
-  return Get(`/${page.path}`, () => {
+  return Get(`/${mappedPath(page.path)}`, () => {
     if (page.title) {
       title(page.title);
     }
@@ -36,6 +37,12 @@ export async function StaticPage(
 
 export function cleanup() {
   title("");
+}
+
+function mappedPath(path: string) {
+  const mapped = mappedPaths.get(path);
+
+  return mapped !== undefined ? mapped : path;
 }
 
 async function initPage(pathToFile: string): Promise<Page> {

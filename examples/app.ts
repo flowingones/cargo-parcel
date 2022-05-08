@@ -5,7 +5,7 @@ await StaticPage(
   Root,
 );
 
-StaticPage(
+await StaticPage(
   "pages/home.tsx",
   Root,
 );

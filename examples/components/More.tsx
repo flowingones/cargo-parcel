@@ -1,6 +1,6 @@
 /* @jsx tag */
 
-import { tag } from "../../parcel/__framework.ts";
+import { tag } from "../deps.ts";
 
 export function More() {
   return <h1>more</h1>;
