@@ -1,3 +1,3 @@
 # Cargo Parcel
 
-Dynamic Frontend Components for Cargo
+Server side rendering for Cargo
