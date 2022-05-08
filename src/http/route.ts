@@ -1,6 +1,6 @@
 import { Get, name } from "../deps.ts";
-import { render } from "../parcel/platform/server/render.ts";
-import { tag, title } from "../parcel/__framework.ts";
+
+import { render, tag, title } from "./deps.ts";
 
 interface Page {
   path: string;

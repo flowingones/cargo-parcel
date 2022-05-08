@@ -1,7 +1,7 @@
 /** @jsx tag */
 
-import { tag } from "../parcel/__framework.ts";
-import { Title } from "./Title.tsx";
+import { tag } from "./deps.ts";
+import { Title } from "./mod.ts";
 
 export function Root(
   props: JSX.ElementProps,

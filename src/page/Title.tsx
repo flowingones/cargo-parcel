@@ -1,6 +1,6 @@
 /** @jsx tag */
 
-import { tag } from "../parcel/__framework.ts";
+import { tag } from "./deps.ts";
 
 const page = {
   title: "",

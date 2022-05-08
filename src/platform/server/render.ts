@@ -1,6 +1,6 @@
 import "../../jsx/types.ts";
 
-import { componentsCache } from "../../__registry.ts";
+import { componentsCache } from "./deps.ts";
 
 const selfClosingTags = [
   "area",

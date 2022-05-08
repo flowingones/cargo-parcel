@@ -1,6 +1,6 @@
 /* @jsx tag */
 
-import { tag } from "../../parcel/__framework.ts";
+import { tag } from "../deps.ts";
 import { More } from "../components/More.tsx";
 
 export const title = "Index";
