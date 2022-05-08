@@ -1,8 +1,13 @@
-import { bootstrap } from "https://deno.land/x/cargo@0.1.21/mod.ts";
+import { bootstrap, Root, StaticPage } from "./deps.ts";
 
-import { autoloadPages } from "../http/autoload.ts";
-import { Root } from "../mod.ts";
+await StaticPage(
+  "pages/index.tsx",
+  Root,
+);
 
-await autoloadPages("pages", Root);
+await StaticPage(
+  "pages/home.tsx",
+  Root,
+);
 
 (await bootstrap()).run();
