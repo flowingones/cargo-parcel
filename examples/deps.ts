@@ -5,3 +5,5 @@ export { StaticPage } from "https://raw.githubusercontent.com/flowingones/cargo-
 export {
   Root,
 } from "https://raw.githubusercontent.com/flowingones/cargo-parcel/dev/src/page/mod.ts";
+
+export { bootstrap } from "https://deno.land/x/cargo@0.1.31/mod.ts";
