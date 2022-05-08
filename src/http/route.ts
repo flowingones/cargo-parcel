@@ -1,6 +1,6 @@
 import { Get, name } from "../deps.ts";
-
 import { render, tag, title } from "./deps.ts";
+
 import { mappedPaths } from "./options.ts";
 
 interface Page {
@@ -9,12 +9,10 @@ interface Page {
   component: (props: JSX.ElementProps) => JSX.Element;
 }
 
-export async function StaticPage(
-  pathToPage: string,
+export function StaticPage(
+  page: Page,
   root: (props: JSX.ElementProps) => JSX.Element,
 ) {
-  const page = await initPage(pathToPage);
-
   return Get(`/${mappedPath(page.path)}`, () => {
     if (page.title) {
       title(page.title);
@@ -43,15 +41,6 @@ function mappedPath(path: string) {
   const mapped = mappedPaths.get(path);
 
   return mapped !== undefined ? mapped : path;
-}
-
-async function initPage(pathToFile: string): Promise<Page> {
-  const page = await import(`file://${Deno.cwd()}/${pathToFile}`);
-  return {
-    title: page["title"],
-    path: name(pathToFile),
-    component: page[name(pathToFile)],
-  };
 }
 
 /*
