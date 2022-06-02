@@ -2,7 +2,8 @@ import { getStyleTag, setup as twSetup, virtualSheet } from "./deps.ts";
 
 const stylesheet = virtualSheet();
 
-function setup(options: any): void {
+function setup(options?: any): void {
+  options = { sheet: stylesheet, ...options };
   twSetup(options);
 }
 function reset(): void {
