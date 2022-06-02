@@ -1,9 +1,9 @@
-import { getStyleTag, setup, virtualSheet } from "../../deps.ts";
+import { getStyleTag, setup as twSetup, virtualSheet } from "./deps.ts";
 
 const stylesheet = virtualSheet();
 
-function init(): void {
-  setup({ sheet: stylesheet });
+function setup(options: any): void {
+  twSetup(options);
 }
 function reset(): void {
   // @ts-ignore
@@ -18,7 +18,7 @@ function styleTag(sheet: any) {
 }
 
 export const Twind = {
-  init,
+  setup,
   reset,
   sheet,
   styleTag,
