@@ -1,4 +1,4 @@
-export { Get } from "https://deno.land/x/cargo@0.1.38/http/mod.ts";
+export { Get } from "https://deno.land/x/cargo@0.1.39/http/mod.ts";
 export { tag } from "../mod.ts";
 
 export { title } from "../page/mod.ts";
