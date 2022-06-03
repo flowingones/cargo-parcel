@@ -12,13 +12,15 @@ export function page(
   page: Page,
   root: (props: JSX.ElementProps) => JSX.Element,
 ) {
+  Twind.reset();
+
   if (page.title) {
     title(page.title);
   }
 
   const content = render(tag(page.component, {}, []));
+
   let twind = "";
-  Twind.reset();
   if (page.twind) {
     twind = Twind.styleTag(Twind.sheet());
   }
