@@ -16,12 +16,15 @@ export function page(
     title(page.title);
   }
 
-  const content = render(tag(page.component, {}, []));
   let twind = "";
   Twind.reset();
+
+  const content = render(tag(page.component, {}, []));
+
   if (page.twind) {
     twind = Twind.styleTag(Twind.sheet());
   }
+
   const response = new Response(
     `<!DOCTYPE html>${render(tag(root, { twind, content }))}`,
     {
@@ -36,7 +39,7 @@ export function page(
   return response;
 }
 
-export function cleanup() {
+function cleanup() {
   title("");
   Twind.reset();
 }
