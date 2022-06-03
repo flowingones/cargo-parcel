@@ -1,5 +1,4 @@
-import { Get, name } from "../deps.ts";
-import { render, tag, title } from "./deps.ts";
+import { Get, render, tag, title } from "./deps.ts";
 
 import { mappedPaths } from "./options.ts";
 

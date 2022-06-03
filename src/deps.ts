@@ -3,4 +3,4 @@ export {
   extension,
   log,
   name,
-} from "https://deno.land/x/cargo@0.1.38/utils/mod.ts";
+} from "https://deno.land/x/cargo@0.1.39/utils/mod.ts";
