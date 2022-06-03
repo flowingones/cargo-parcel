@@ -1,4 +1,4 @@
-export { setup } from "https://cdn.skypack.dev/twind";
+export { setup, tw } from "https://cdn.skypack.dev/twind";
 export {
   getStyleTag,
   virtualSheet,
