@@ -6,6 +6,10 @@ interface Page {
   title?: string;
   component: (props: JSX.ElementProps) => JSX.Element;
   twind?: boolean;
+  status?: {
+    code: number;
+    text?: string;
+  };
 }
 
 export function page(
@@ -31,6 +35,8 @@ export function page(
       headers: {
         "content-type": "text/html",
       },
+      status: page.status?.code,
+      statusText: page.status?.text,
     },
   );
 
