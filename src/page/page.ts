@@ -1,4 +1,4 @@
-import { render, tag, Twind } from "./deps.ts";
+import { getStyleTag, render, sheet, tag } from "./deps.ts";
 import { title } from "./mod.ts";
 
 interface Page {
@@ -21,12 +21,14 @@ export function page(
   }
 
   let twind = "";
-  Twind.reset();
+
+  /* @ts-ignore */
+  sheet.reset();
 
   const content = render(tag(page.component, {}, []));
 
   if (page.twind) {
-    twind = Twind.styleTag(Twind.sheet());
+    twind = getStyleTag(sheet);
   }
 
   const response = new Response(
@@ -47,5 +49,6 @@ export function page(
 
 function cleanup() {
   title("");
-  Twind.reset();
+  /* @ts-ignore */
+  sheet.reset();
 }
