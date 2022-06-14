@@ -2,7 +2,6 @@ import { getStyleTag, render, sheet, tag } from "./deps.ts";
 import { title } from "./mod.ts";
 
 interface Page {
-  path: string;
   title?: string;
   component: (props: JSX.ElementProps) => JSX.Element;
   twind?: boolean;
@@ -16,23 +15,10 @@ export function page(
   page: Page,
   root: (props: JSX.ElementProps) => JSX.Element,
 ) {
-  if (page.title) {
-    title(page.title);
-  }
-
-  let twind = "";
-
-  /* @ts-ignore */
-  sheet.reset();
-
-  const content = render(tag(page.component, {}, []));
-
-  if (page.twind) {
-    twind = getStyleTag(sheet);
-  }
+  setTitle(page.title);
 
   const response = new Response(
-    `<!DOCTYPE html>${render(tag(root, { twind, content }))}`,
+    `<!DOCTYPE html>${render(tag(root, { ...twind(page) }))}`,
     {
       headers: {
         "content-type": "text/html",
@@ -47,8 +33,28 @@ export function page(
   return response;
 }
 
-function cleanup() {
+function setTitle(pageTitle?: string) {
+  if (pageTitle) {
+    title(pageTitle);
+  }
+}
+
+function resetTitle() {
   title("");
+}
+
+function twind(page: Page) {
+  /* @ts-ignore */
+  sheet.reset();
+
+  return {
+    content: render(tag(page.component, {}, [])),
+    twindStyles: page.twind ? getStyleTag(sheet) : undefined,
+  };
+}
+
+function cleanup() {
+  resetTitle();
   /* @ts-ignore */
   sheet.reset();
 }
