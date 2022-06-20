@@ -1,8 +1,8 @@
-declare namespace JSX {
+export declare namespace JSX {
   type Node = string | Element | undefined | null;
 
   type Element = {
-    tag: string | ((props: ElementProps) => JSX.Element);
+    tag: string | ((props: ElementProps) => Element);
     eventRefs: EventRef[];
     props: ElementProps;
     children?: Node[];
