@@ -1,4 +1,4 @@
-import "../../jsx/types.ts";
+import "../../types.ts";
 
 import { componentsCache } from "./deps.ts";
 
@@ -34,7 +34,7 @@ function parse(node: JSX.Node): string {
 
   if (typeof (<JSX.Element> node).tag === "string") {
     if (selfClosingTags.includes(<string> node.tag)) {
-      return `<${(<JSX.Element> node).tag} ${stringFrom(node.props)}/>`;
+      return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}/>`;
     }
 
     return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}>${

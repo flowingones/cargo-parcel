@@ -1,4 +1,4 @@
-import "./jsx/types.ts";
+import "./types.ts";
 import { componentsCache } from "./__registry.ts";
 import { eventName, isEventName } from "./event.ts";
 
