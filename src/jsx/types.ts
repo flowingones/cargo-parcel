@@ -1,28 +1,29 @@
-export declare namespace JSX {
-  type Node = string | Element | undefined | null;
+declare global {
+  export namespace JSX {
+    type Node = string | Element | undefined | null;
 
-  type Element = {
-    tag: string | ((props: ElementProps) => Element);
-    eventRefs: EventRef[];
-    props: ElementProps;
-    children?: Node[];
-  };
+    type Element = {
+      tag: string | ((props: ElementProps) => Element);
+      eventRefs: EventRef[];
+      props: ElementProps;
+      children?: Node[];
+    };
 
-  type EventRef = {
-    name: string;
-    listener: () => void;
-  };
+    type EventRef = {
+      name: string;
+      listener: () => void;
+    };
 
-  type ElementProps = {
-    children?: Node[];
-    [type: string]: unknown;
-  };
+    type ElementProps = {
+      children?: Node[];
+      [type: string]: unknown;
+    };
 
-  type IntrinsicElements = {
-    [key: string]: unknown;
-  };
+    type IntrinsicElements = {
+      [key: string]: unknown;
+    };
 
-  /*
+    /*
   type HtmlElementMap = {
     [K in keyof HTMLElementTagNameMap]: {
       [k: string]: unknown;
@@ -35,4 +36,7 @@ export declare namespace JSX {
     };
   };
   */
+  }
 }
+
+export {};
