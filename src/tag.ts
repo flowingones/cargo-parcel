@@ -1,4 +1,4 @@
-import "./jsx/types.ts";
+import "./types.ts";
 
 import { eventName, isEventName } from "./event.ts";
 
