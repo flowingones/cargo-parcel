@@ -27,7 +27,7 @@ export function renderToString(
   return parse(tree);
 }
 
-function parse(vNode: VNode) {
+export function parse(vNode: VNode) {
   // VNode is null or undefined
   if (!vNode) return "";
 
