@@ -1,5 +1,5 @@
 import "./types.ts";
-import { componentsCache } from "./__registry.ts";
+import { componentsCache } from "./registry.ts";
 
 export interface ElementProps {
   [key: string]: unknown;
