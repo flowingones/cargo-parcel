@@ -19,8 +19,6 @@ export function state<T>(value: T): State<T> {
 }
 
 function createsState<T>(value: T): State<T> {
-  const component =
-    componentsCache.toCreate[componentsCache.toCreate.length - 1];
   const newState: State<T> = [
     value,
     (newValue) => {
@@ -29,7 +27,6 @@ function createsState<T>(value: T): State<T> {
       cycle();
     },
   ];
-  component.state.push(<State<unknown>> newState);
   return newState;
 }
 
