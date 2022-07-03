@@ -1,5 +1,5 @@
 import { cycle } from "./cycle.ts";
-import { componentsCache } from "./__registry.ts";
+import { componentsCache } from "./registry.ts";
 
 export type State<T> = [
   value: T,
