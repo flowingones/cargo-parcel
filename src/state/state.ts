@@ -1,5 +1,4 @@
-import { cycle } from "./cycle.ts";
-import { componentsCache } from "./registry.ts";
+import { componentsCache } from "./deps.ts";
 
 export type State<T> = [
   value: T,
@@ -24,7 +23,6 @@ function createsState<T>(value: T): State<T> {
     (newValue) => {
       stateCache.push(<State<unknown>> newState);
       newState[0] = newValue;
-      cycle();
     },
   ];
   return newState;
