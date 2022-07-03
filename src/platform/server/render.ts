@@ -1,4 +1,4 @@
-import { ast, VComponent, VElement, VNode, VText } from "../../ast.ts";
+import { ast, VComponent, VElement, VNode, VText } from "./deps.ts";
 import "../../types.ts";
 
 import { escapeHtml } from "./utils.ts";

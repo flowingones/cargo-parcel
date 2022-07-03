@@ -1,4 +1,4 @@
-import { tag } from "../../mod.ts";
+import { tag } from "./deps.ts";
 import { assertEquals } from "../../test_deps.ts";
 
 import { renderToString } from "./mod.ts";
