@@ -1,1 +1,8 @@
-export { componentsCache } from "../../__registry.ts";
+export {
+  ast,
+  tag,
+  type VComponent,
+  type VElement,
+  type VNode,
+  type VText,
+} from "../../mod.ts";
