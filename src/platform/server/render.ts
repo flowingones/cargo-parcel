@@ -1,4 +1,4 @@
-import { ast, VComponent, VElement, VNode, VText } from "./deps.ts";
+import { AST, VComponent, VElement, VNode, VText } from "./deps.ts";
 import "../../types.ts";
 
 import { escapeHtml } from "./utils.ts";
@@ -23,7 +23,7 @@ const selfClosingTags = [
 export function renderToString(
   node: JSX.Node,
 ): string {
-  const tree = ast(node);
+  const tree = AST.create(node);
   return stringify(tree);
 }
 

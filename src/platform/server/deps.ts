@@ -1,5 +1,5 @@
 export {
-  ast,
+  AST,
   tag,
   type VComponent,
   type VElement,
