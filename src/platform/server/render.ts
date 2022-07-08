@@ -1,6 +1,7 @@
 import "../../types.ts";
 
 import { componentsCache } from "./deps.ts";
+import { escapeHtml } from "./utils.ts";
 
 const selfClosingTags = [
   "area",
@@ -29,19 +30,31 @@ function parse(node: JSX.Node): string {
   if (!node) return "";
 
   if (typeof node === "string" || typeof node === "number") {
-    return node.toString();
+    return escapeHtml(node.toString());
   }
 
   if (typeof (<JSX.Element> node).tag === "string") {
-    if (selfClosingTags.includes(<string> node.tag)) {
-      return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}/>`;
-    }
-
-    return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}>${
-      node.children?.map((child) => parse(child)).join("")
-    }</${(<JSX.Element> node).tag}>`;
+    return elementToString(node);
   }
 
+  if (typeof node.tag === "function") {
+    return componentToString(node);
+  }
+
+  return "";
+}
+
+function elementToString(node: JSX.Element): string {
+  if (selfClosingTags.includes(<string> node.tag)) {
+    return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}/>`;
+  }
+
+  return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}>${
+    node.children?.map((child) => parse(child)).join("")
+  }</${(<JSX.Element> node).tag}>`;
+}
+
+function componentToString(node: JSX.Element): string {
   if (typeof node.tag === "function") {
     const props: JSX.ElementProps = node.props;
     props.children = node.children;
@@ -59,8 +72,7 @@ function parse(node: JSX.Node): string {
 
     return str;
   }
-
-  return "";
+  throw Error('Component tag must be typeof "function"');
 }
 
 function stringFrom(attributes: JSX.IntrinsicElements): string {
