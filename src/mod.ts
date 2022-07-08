@@ -2,7 +2,8 @@
 export { tag } from "./tag.ts";
 export { componentsCache } from "./registry.ts";
 export {
-  ast,
+  AST,
+  VComponentMode,
   type VComponent,
   type VElement,
   type VNode,
