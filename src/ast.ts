@@ -1,27 +1,37 @@
 import "./types.ts";
 import { componentsCache } from "./registry.ts";
 
+export enum VComponentMode {
+  NotCreated,
+  Created,
+}
+
 export interface ElementProps {
   [key: string]: unknown;
   children?: VNode[];
 }
 
 export interface VNodeRef {
+  type: "text" | "element" | "component";
   nodeRef?: unknown;
   eventsRefs: JSX.EventRef[];
   children?: VNode[];
 }
 
 export interface VElement extends VNodeRef {
+  type: "element";
   tag: string;
   props: ElementProps;
 }
 
 export interface VText extends VNodeRef {
+  type: "text";
   text: string | number;
 }
 
 export interface VComponent {
+  type: "component";
+  mode: VComponentMode;
   id: symbol;
   fn: (props: JSX.ElementProps) => JSX.Element;
   props: JSX.ElementProps;
@@ -30,7 +40,7 @@ export interface VComponent {
 
 export type VNode = VComponent | VElement | VText | undefined | null;
 
-export function ast(node: JSX.Node): VNode {
+function create(node: JSX.Node): VNode {
   if (!node) return;
 
   if (typeof node === "string" || typeof node === "number") {
@@ -48,6 +58,7 @@ export function ast(node: JSX.Node): VNode {
 
 function text(text: string): VText {
   return {
+    type: "text",
     text,
     eventsRefs: [],
   };
@@ -56,17 +67,23 @@ function text(text: string): VText {
 function element(node: JSX.Element): VElement {
   const { tag, children, eventRefs, props } = node;
 
-  const vnode = {
+  return {
+    type: "element",
     tag: <string> tag,
     props: <ElementProps> props,
     eventsRefs: eventRefs,
-    children: children?.map((child) => ast(child)),
+    children: children?.map((child) => create(child)),
   };
-
-  return vnode;
 }
 
-function component(node: JSX.Element): VNode {
+function component(node: JSX.Element | VComponent): VNode {
+  if ("fn" in node && typeof node.fn === "function") {
+    return updateComponent(node);
+  }
+  return createComponent(<JSX.Element> node);
+}
+
+function createComponent(node: JSX.Element) {
   if (typeof node.tag !== "function") {
     throw new Error(
       "Component could not be initialized because tag is not a function",
@@ -78,15 +95,75 @@ function component(node: JSX.Element): VNode {
   props.children = children;
 
   const component: VComponent = {
+    type: "component",
     id: Symbol("Component"),
+    mode: VComponentMode.NotCreated,
     fn: tag,
     ast: undefined,
     props,
   };
 
   componentsCache.toCreate.push(component);
-  component.ast = ast(component.fn(props));
+  component.ast = create(component.fn(props));
+  component.mode = VComponentMode.Created;
   componentsCache.toCreate.shift();
 
   return component;
 }
+
+function updateComponent(vComponent: VComponent) {
+  const { fn, props } = vComponent;
+
+  componentsCache.toCreate.push(vComponent);
+  const node = fn(props);
+  componentsCache.toCreate.shift();
+
+  vComponent.ast = track(node, vComponent.ast);
+  return vComponent;
+}
+
+function track(node: JSX.Node, vNode: VNode): VNode {
+  if (!node) return;
+
+  if (typeof node === "string" || typeof node === "number") {
+    return text(node);
+  }
+
+  if (typeof node.tag === "string") {
+    if (vNode?.type === "element" && node.tag === vNode.tag) {
+      return updateElement(node, vNode);
+    }
+    return element(node);
+  }
+
+  if (typeof node.tag === "function") {
+    if (vNode?.type === "component" && (vNode.fn === node.tag)) {
+      const { children, props } = node;
+      props.children = children;
+      vNode.props = props;
+      return component(vNode);
+    }
+    return component(node);
+  }
+}
+
+function updateElement(node: JSX.Element, vNode: VElement): VElement {
+  vNode.children = node.children?.map((child, i) => {
+    return track(child, vNode.children ? vNode.children[i] : undefined);
+  });
+  return vNode;
+}
+
+function update(vNode: VNode) {
+  if (!vNode) {
+    return;
+  }
+  if (vNode.type === "component") {
+    return component(vNode);
+  }
+}
+
+export const AST = {
+  create,
+  update,
+};
