@@ -1,29 +1,23 @@
 import "./types.ts";
-import { componentsCache } from "./__registry.ts";
-import { eventName, isEventName } from "./event.ts";
-
-import type { Hook } from "./__hooks.ts";
-import type { State } from "./__state.ts";
-
-const components: VComponent[] = [];
+import { componentsCache } from "./registry.ts";
 
 export interface ElementProps {
   [key: string]: unknown;
   children?: VNode[];
 }
 
-export interface NodeRef {
+export interface VNodeRef {
   nodeRef?: unknown;
   eventsRefs: JSX.EventRef[];
-  componentRef: symbol;
+  children?: VNode[];
 }
 
-export interface VElement extends NodeRef {
+export interface VElement extends VNodeRef {
   tag: string;
   props: ElementProps;
 }
 
-export interface VText extends NodeRef {
+export interface VText extends VNodeRef {
   text: string | number;
 }
 
@@ -31,35 +25,20 @@ export interface VComponent {
   id: symbol;
   fn: (props: JSX.ElementProps) => JSX.Element;
   props: JSX.ElementProps;
-  hooks: {
-    onMount?: Hook;
-    onDestroy?: Hook;
-  };
-  ast?: JSX.Element;
-  state: State<unknown>[];
+  ast: VNode;
 }
 
 export type VNode = VComponent | VElement | VText | undefined | null;
 
-export type ChildNode = VElement | VComponent | string;
-
-export function ast(node: JSX.Node, scope?: symbol): VNode {
+export function ast(node: JSX.Node): VNode {
   if (!node) return;
 
-  if (!scope) {
-    scope = Symbol("Root scope");
-  }
-
   if (typeof node === "string" || typeof node === "number") {
-    return {
-      text: node,
-      componentRef: scope,
-      eventsRefs: [],
-    };
+    return text(node);
   }
 
   if (typeof node.tag === "string") {
-    return element(node, scope);
+    return element(node);
   }
 
   if (typeof node.tag === "function") {
@@ -67,29 +46,21 @@ export function ast(node: JSX.Node, scope?: symbol): VNode {
   }
 }
 
-function element(node: JSX.Element, scope: symbol): VElement {
-  const { tag } = node;
-  const { ...props } = node.props;
-  const events: JSX.EventRef[] = [];
-  (<ElementProps> props).children = props.children?.map((child) =>
-    ast(child, scope)
-  );
+function text(text: string): VText {
+  return {
+    text,
+    eventsRefs: [],
+  };
+}
 
-  for (const prop in props) {
-    if (isEventName(prop)) {
-      events.push({
-        name: eventName(prop),
-        listener: <() => void> props[prop],
-      });
-      delete props[prop];
-    }
-  }
+function element(node: JSX.Element): VElement {
+  const { tag, children, eventRefs, props } = node;
 
   const vnode = {
     tag: <string> tag,
     props: <ElementProps> props,
-    eventsRefs: events,
-    componentRef: scope,
+    eventsRefs: eventRefs,
+    children: children?.map((child) => ast(child)),
   };
 
   return vnode;
@@ -102,21 +73,20 @@ function component(node: JSX.Element): VNode {
     );
   }
 
-  const { tag, props } = node;
+  const { tag, props, children } = node;
+
+  props.children = children;
 
   const component: VComponent = {
     id: Symbol("Component"),
     fn: tag,
+    ast: undefined,
     props,
-    hooks: {},
-    state: [],
   };
 
   componentsCache.toCreate.push(component);
-  component.ast = component.fn(component.props);
+  component.ast = ast(component.fn(props));
   componentsCache.toCreate.shift();
 
-  components.push(component);
-
-  return ast(component.ast, component.id);
+  return component;
 }

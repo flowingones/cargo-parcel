@@ -1,6 +1,6 @@
+import { ast, VComponent, VElement, VNode, VText } from "./deps.ts";
 import "../../types.ts";
 
-import { componentsCache } from "./deps.ts";
 import { escapeHtml } from "./utils.ts";
 
 const selfClosingTags = [
@@ -20,59 +20,51 @@ const selfClosingTags = [
   "wbr",
 ];
 
-export function render(
-  node: JSX.Element,
-) {
-  return parse(node);
+export function renderToString(
+  node: JSX.Node,
+): string {
+  const tree = ast(node);
+  return stringify(tree);
 }
 
-function parse(node: JSX.Node): string {
-  if (!node) return "";
+export function stringify(vNode: VNode) {
+  // VNode is null or undefined
+  if (!vNode) return "";
 
-  if (typeof node === "string" || typeof node === "number") {
-    return escapeHtml(node.toString());
+  // VNode is VText
+  if (
+    typeof (<VText> vNode).text === "string" ||
+    typeof (<VText> vNode).text === "number"
+  ) {
+    return escapeHtml((<VText> vNode).text.toString());
   }
 
-  if (typeof (<JSX.Element> node).tag === "string") {
-    return elementToString(node);
+  // VNode is VElement
+  if (typeof (<VElement> vNode).tag === "string") {
+    return elementToString(<VElement> vNode);
   }
 
-  if (typeof node.tag === "function") {
-    return componentToString(node);
+  //VNode is VComponent
+  if (typeof (<VComponent> vNode).fn === "function") {
+    return componentToString(<VComponent> vNode);
   }
 
-  return "";
+  throw Error("This type of ast node is not supported!");
 }
 
-function elementToString(node: JSX.Element): string {
-  if (selfClosingTags.includes(<string> node.tag)) {
-    return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}/>`;
+function elementToString(vNode: VElement): string {
+  if (selfClosingTags.includes(vNode.tag)) {
+    return `<${vNode.tag}${stringFrom(vNode.props)}/>`;
   }
 
-  return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}>${
-    node.children?.map((child) => parse(child)).join("")
-  }</${(<JSX.Element> node).tag}>`;
+  const { props, children } = vNode;
+  return `<${vNode.tag}${stringFrom(props)}>${
+    children?.map((child) => stringify(child)).join("")
+  }</${vNode.tag}>`;
 }
 
-function componentToString(node: JSX.Element): string {
-  if (typeof node.tag === "function") {
-    const props: JSX.ElementProps = node.props;
-    props.children = node.children;
-
-    componentsCache.toCreate.push({
-      id: Symbol(),
-      fn: node.tag,
-      props,
-      hooks: {},
-      state: [],
-    });
-
-    const str = parse(node.tag(props));
-    componentsCache.toCreate.pop();
-
-    return str;
-  }
-  throw Error('Component tag must be typeof "function"');
+function componentToString(vnode: VComponent): string {
+  return stringify(vnode.ast);
 }
 
 function stringFrom(attributes: JSX.IntrinsicElements): string {
@@ -80,7 +72,7 @@ function stringFrom(attributes: JSX.IntrinsicElements): string {
   for (const key in attributes) {
     const attribute = attributes[key];
     if (typeof attribute === "string") {
-      attributesString += ` ${key}="${attribute}"`;
+      attributesString += ` ${key}="${escapeHtml(attribute)}"`;
     }
     if (typeof attribute === "boolean") {
       attributesString += ` ${key}`;

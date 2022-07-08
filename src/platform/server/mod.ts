@@ -1,1 +1,1 @@
-export { render } from "./render.ts";
+export { renderToString } from "./render.ts";
