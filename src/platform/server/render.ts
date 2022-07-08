@@ -24,10 +24,10 @@ export function renderToString(
   node: JSX.Node,
 ): string {
   const tree = ast(node);
-  return parse(tree);
+  return stringify(tree);
 }
 
-export function parse(vNode: VNode) {
+export function stringify(vNode: VNode) {
   // VNode is null or undefined
   if (!vNode) return "";
 
@@ -59,12 +59,12 @@ function elementToString(vNode: VElement): string {
 
   const { props, children } = vNode;
   return `<${vNode.tag}${stringFrom(props)}>${
-    children?.map((child) => parse(child)).join("")
+    children?.map((child) => stringify(child)).join("")
   }</${vNode.tag}>`;
 }
 
 function componentToString(vnode: VComponent): string {
-  return parse(vnode.ast);
+  return stringify(vnode.ast);
 }
 
 function stringFrom(attributes: JSX.IntrinsicElements): string {
