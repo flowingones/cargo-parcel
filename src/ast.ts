@@ -76,6 +76,20 @@ function element(node: JSX.Element): VElement {
   };
 }
 
+function updateElement(node: JSX.Element, vNode: VElement): VElement {
+  const { tag, children, eventRefs, props } = node;
+
+  return {
+    type: "element",
+    tag: <string> tag,
+    props: <ElementProps> props,
+    eventsRefs: eventRefs,
+    children: children?.map((child, i) => {
+      return track(child, vNode.children ? vNode.children[i] : undefined);
+    }),
+  };
+}
+
 function component(node: JSX.Element | VComponent): VNode {
   if ("fn" in node && typeof node.fn === "function") {
     return updateComponent(node);
@@ -112,13 +126,22 @@ function createComponent(node: JSX.Element) {
 }
 
 function updateComponent(vComponent: VComponent) {
-  const { fn, props } = vComponent;
+  const { id, mode, fn, ast, props } = vComponent;
 
-  componentsCache.toCreate.push(vComponent);
+  const updatedVComponent: VComponent = {
+    type: "component",
+    id,
+    mode,
+    fn,
+    ast: undefined,
+    props,
+  };
+
+  componentsCache.toCreate.push(updatedVComponent);
   const node = fn(props);
   componentsCache.toCreate.shift();
 
-  vComponent.ast = track(node, vComponent.ast);
+  vComponent.ast = track(node, ast);
   return vComponent;
 }
 
@@ -147,13 +170,6 @@ function track(node: JSX.Node, vNode: VNode): VNode {
   }
 }
 
-function updateElement(node: JSX.Element, vNode: VElement): VElement {
-  vNode.children = node.children?.map((child, i) => {
-    return track(child, vNode.children ? vNode.children[i] : undefined);
-  });
-  return vNode;
-}
-
 function update(vNode: VNode) {
   if (!vNode) {
     return;
@@ -161,6 +177,7 @@ function update(vNode: VNode) {
   if (vNode.type === "component") {
     return component(vNode);
   }
+  throw Error(`VNode with type of "${vNode.type}" is not supported.`);
 }
 
 export const AST = {
