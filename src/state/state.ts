@@ -1,6 +1,7 @@
 import { componentsCache, VComponent } from "./deps.ts";
+import { cycle } from "./mod.ts";
 
-interface VStateComponent<T> extends VComponent {
+export interface VStateComponent<T> extends VComponent<unknown> {
   state?: State<T>[];
 }
 
@@ -49,11 +50,8 @@ function createsState<T>(value: T, vComponent: VStateComponent<T>): State<T> {
   const newState: State<T> = [
     value,
     (newValue) => {
-      if (Array.isArray(vComponent.state)) {
-        stateCache.push(...vComponent.state);
-        vComponent.state = [];
-        newState[0] = newValue;
-      }
+      newState[0] = newValue;
+      cycle();
     },
     vComponent.id,
   ];
