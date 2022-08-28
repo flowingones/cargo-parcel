@@ -26,7 +26,7 @@ export function page(props: PageProps) {
 
   const content = html({
     content: component,
-    head: getHead(),
+    head,
     htmlAttributes: htmlAttributes(),
     bodyAttributes: bodyAttributes(),
   });
