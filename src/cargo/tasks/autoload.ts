@@ -3,8 +3,17 @@ import { mappedPath } from "../mod.ts";
 // TODO: Import from mod.ts
 import { page } from "../page.ts";
 
+export interface Integration {
+  getStyles(...args: any[]): string;
+}
+
+interface TaskConfig {
+  cssIntegration?: Integration;
+}
+
 export function autoloadPages(
   routes: Record<string, unknown>,
+  config: TaskConfig,
 ) {
   return (app: any) => {
     for (const route in routes) {
@@ -17,6 +26,7 @@ export function autoloadPages(
           return new Response(
             page({
               component: component.default,
+              cssIntegration: config?.cssIntegration,
             }),
             {
               headers: {
