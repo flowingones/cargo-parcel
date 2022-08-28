@@ -19,7 +19,9 @@ export function page(props: PageProps) {
   const head = getHead();
 
   if (props.cssIntegration) {
-    head.link?.unshift(props.cssIntegration.getStyles());
+    head.link
+      ? head.link.push(props.cssIntegration.getStyles())
+      : head.link = [props.cssIntegration.getStyles()];
   }
 
   const content = html({
