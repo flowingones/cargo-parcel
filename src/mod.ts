@@ -7,5 +7,6 @@ export {
   VComponentMode,
   type VElement,
   type VNode,
+  type VNodeRef,
   type VText,
 } from "./ast.ts";
