@@ -1,5 +1,5 @@
 export function isEventName(a: string) {
-  const p = /on-([a-z]+)/;
+  const p = /^on-([a-z]+)$/;
   return p.test(a);
 }
 
