@@ -1,30 +1,67 @@
-import { componentsCache } from "./deps.ts";
+import { componentsCache, VComponent } from "./deps.ts";
+import { cycle } from "./mod.ts";
+
+export interface VStateComponent<T> extends VComponent<unknown> {
+  state?: State<T>[];
+}
 
 export type State<T> = [
   value: T,
   setter: (value: T) => void,
+  componentId: symbol,
 ];
 
-const stateCache: State<unknown>[] = [];
+const stateCache: State<any>[] = [];
 
 export function state<T>(value: T): State<T> {
+  if (!componentsCache.toCreate.length) {
+    throw Error("State could neither be created nor returned!");
+  }
+
+  const vComponent: VStateComponent<T> =
+    componentsCache.toCreate[componentsCache.toCreate.length - 1];
+
+  // If state is left in the current VComponent scope return it.
   if (stateCache.length) {
-    return returnState();
+    if (stateCache[stateCache.length - 1][2] === vComponent.id) {
+      const current: State<T> = returnState();
+      vComponent.state?.push(current);
+      return current;
+    }
+    // If VComponent has different id reset the state cache
+    stateCache.length = 0;
   }
-  if (componentsCache.toCreate.length) {
-    return createsState(value);
+
+  // If VComponent is created and has state return VComponent state
+  if (vComponent.mode === 1 && vComponent.state?.length) {
+    stateCache.push(...vComponent.state);
+    vComponent.state = [];
+    const current: State<T> = returnState();
+    vComponent.state.push(current);
+    return current;
   }
-  throw Error("State could neither be initialized or returned");
+
+  // Return new state
+  return createsState(value, vComponent);
 }
 
-function createsState<T>(value: T): State<T> {
+function createsState<T>(value: T, vComponent: VStateComponent<T>): State<T> {
+  // Create new state with reference to vComponent
   const newState: State<T> = [
     value,
     (newValue) => {
-      stateCache.push(<State<unknown>> newState);
       newState[0] = newValue;
+      cycle();
     },
+    vComponent.id,
   ];
+
+  // Add state to the component
+  if (Array.isArray(vComponent.state)) {
+    vComponent.state.push(newState);
+  } else {
+    vComponent.state = [newState];
+  }
   return newState;
 }
 

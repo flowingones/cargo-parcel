@@ -3,11 +3,13 @@ declare global {
     type Node = string | Element | undefined | null;
 
     type Element = {
-      tag: string | ((props: ElementProps) => Element);
+      tag: string | Component;
       eventRefs: EventRef[];
       props: ElementProps;
-      children?: Node[];
+      children: Node[];
     };
+
+    type Component = (props: ElementProps) => Element;
 
     type EventRef = {
       name: string;

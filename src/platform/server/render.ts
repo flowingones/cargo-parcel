@@ -1,4 +1,4 @@
-import { ast, VComponent, VElement, VNode, VText } from "./deps.ts";
+import { AST, VComponent, VElement, VNode, VText } from "./deps.ts";
 import "../../types.ts";
 
 import { escapeHtml } from "./utils.ts";
@@ -20,39 +20,42 @@ const selfClosingTags = [
   "wbr",
 ];
 
+export function astToString(vNode: VNode<unknown>) {
+  return stringify(vNode);
+}
+
 export function renderToString(
   node: JSX.Node,
 ): string {
-  const tree = ast(node);
+  const tree = AST.create<unknown>(node);
   return stringify(tree);
 }
 
-export function stringify(vNode: VNode) {
+export function stringify<T>(vNode: VNode<T>): string {
   // VNode is null or undefined
   if (!vNode) return "";
 
   // VNode is VText
   if (
-    typeof (<VText> vNode).text === "string" ||
-    typeof (<VText> vNode).text === "number"
+    vNode.type === "text"
   ) {
-    return escapeHtml((<VText> vNode).text.toString());
+    return escapeHtml((<VText<T>> vNode).text.toString());
   }
 
   // VNode is VElement
-  if (typeof (<VElement> vNode).tag === "string") {
-    return elementToString(<VElement> vNode);
+  if (vNode.type === "element") {
+    return elementToString(<VElement<T>> vNode);
   }
 
   //VNode is VComponent
-  if (typeof (<VComponent> vNode).fn === "function") {
-    return componentToString(<VComponent> vNode);
+  if (vNode.type === "component") {
+    return stringify(<VComponent<T>> vNode.ast);
   }
 
-  throw Error("This type of ast node is not supported!");
+  throw Error("Node type is not supported!");
 }
 
-function elementToString(vNode: VElement): string {
+function elementToString<T>(vNode: VElement<T>): string {
   if (selfClosingTags.includes(vNode.tag)) {
     return `<${vNode.tag}${stringFrom(vNode.props)}/>`;
   }
@@ -61,10 +64,6 @@ function elementToString(vNode: VElement): string {
   return `<${vNode.tag}${stringFrom(props)}>${
     children?.map((child) => stringify(child)).join("")
   }</${vNode.tag}>`;
-}
-
-function componentToString(vnode: VComponent): string {
-  return stringify(vnode.ast);
 }
 
 function stringFrom(attributes: JSX.IntrinsicElements): string {
