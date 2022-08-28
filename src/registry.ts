@@ -1,7 +1,7 @@
 import type { VComponent } from "./ast.ts";
 
 interface CompontentsCache {
-  toCreate: VComponent[];
+  toCreate: VComponent<unknown>[];
 }
 
 export const componentsCache: CompontentsCache = {
