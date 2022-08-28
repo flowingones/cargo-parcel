@@ -6,41 +6,46 @@ export enum VComponentMode {
   Created,
 }
 
-export interface ElementProps {
+export interface ElementProps<T> {
   [key: string]: unknown;
-  children?: VNode[];
+  children?: VNode<T>[];
 }
 
-export interface VNodeRef {
-  type: "text" | "element" | "component";
-  nodeRef?: unknown;
+export interface VNodeRef<T> {
+  type: "text" | "element";
+  nodeRef?: T;
   eventsRefs: JSX.EventRef[];
-  children?: VNode[];
+  children?: VNode<T>[];
 }
 
-export interface VElement extends VNodeRef {
+export interface VElement<T> extends VNodeRef<T> {
   type: "element";
   tag: string;
-  props: ElementProps;
+  props: ElementProps<T>;
 }
 
-export interface VText extends VNodeRef {
+export interface VText<T> extends VNodeRef<T> {
   type: "text";
-  text: string | number;
+  text: string;
 }
 
-export interface VComponent {
+export interface VComponent<T> {
   type: "component";
   mode: VComponentMode;
   id: symbol;
   fn: (props: JSX.ElementProps) => JSX.Element;
   props: JSX.ElementProps;
-  ast: VNode;
+  ast: VNode<T>;
 }
 
-export type VNode = VComponent | VElement | VText | undefined | null;
+export type VNode<T> =
+  | VComponent<T>
+  | VElement<T>
+  | VText<T>
+  | undefined
+  | null;
 
-function create(node: JSX.Node): VNode {
+function create<T>(node: JSX.Node): VNode<T> {
   if (!node) return;
 
   if (typeof node === "string" || typeof node === "number") {
@@ -56,51 +61,60 @@ function create(node: JSX.Node): VNode {
   }
 }
 
-function text(text: string): VText {
+function text<T>(text: string): VText<T> {
   return {
     type: "text",
-    text,
+    text: `${text}`,
     eventsRefs: [],
   };
 }
 
-function element(node: JSX.Element): VElement {
-  const { tag, children, eventRefs, props } = node;
+function element<T>(node: JSX.Element): VElement<T> {
+  const { tag, children, eventRefs, props, ...rest } = node;
 
   return {
     type: "element",
     tag: <string> tag,
-    props: <ElementProps> props,
+    props: <ElementProps<T>> props,
     eventsRefs: eventRefs,
-    children: children?.map((child) => create(child)),
+    children: children?.map((child) => {
+      if (typeof child === "number") {
+        child = `${child}`;
+      }
+      return create(child);
+    }),
+    ...rest,
   };
 }
 
-function updateElement(node: JSX.Element, vNode: VElement): VElement {
+function updateElement<T>(node: JSX.Element, vNode: VElement<T>): VElement<T> {
   const { tag, children, eventRefs, props } = node;
 
   return {
     type: "element",
     tag: <string> tag,
-    props: <ElementProps> props,
+    props: <ElementProps<T>> props,
     eventsRefs: eventRefs,
     children: children?.map((child, i) => {
+      if (typeof child === "number") {
+        child = `${child}`;
+      }
       return track(child, vNode.children ? vNode.children[i] : undefined);
     }),
   };
 }
 
-function component(node: JSX.Element | VComponent): VNode {
+function component<T>(node: JSX.Element | VComponent<T>): VNode<T> {
   if ("fn" in node && typeof node.fn === "function") {
     return updateComponent(node);
   }
   return createComponent(<JSX.Element> node);
 }
 
-function createComponent(node: JSX.Element) {
+function createComponent<T>(node: JSX.Element) {
   if (typeof node.tag !== "function") {
     throw new Error(
-      "Component could not be initialized because tag is not a function",
+      "Component is not a function",
     );
   }
 
@@ -108,12 +122,12 @@ function createComponent(node: JSX.Element) {
 
   props.children = children;
 
-  const component: VComponent = {
+  const component: VComponent<T> = {
     type: "component",
+    ast: undefined,
     id: Symbol("Component"),
     mode: VComponentMode.NotCreated,
     fn: tag,
-    ast: undefined,
     props,
   };
 
@@ -125,27 +139,28 @@ function createComponent(node: JSX.Element) {
   return component;
 }
 
-function updateComponent(vComponent: VComponent) {
-  const { id, mode, fn, ast, props } = vComponent;
+function updateComponent<T>(vComponent: VComponent<T>) {
+  const { type, id, mode, fn, ast, props, ...rest } = vComponent;
 
-  const updatedVComponent: VComponent = {
-    type: "component",
+  const updatedVComponent: VComponent<T> = {
+    type,
     id,
     mode,
     fn,
     ast: undefined,
     props,
+    ...rest,
   };
 
   componentsCache.toCreate.push(updatedVComponent);
   const node = fn(props);
   componentsCache.toCreate.shift();
 
-  vComponent.ast = track(node, ast);
-  return vComponent;
+  updatedVComponent.ast = track(node, ast);
+  return updatedVComponent;
 }
 
-function track(node: JSX.Node, vNode: VNode): VNode {
+function track<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
   if (!node) return;
 
   if (typeof node === "string" || typeof node === "number") {
@@ -170,7 +185,7 @@ function track(node: JSX.Node, vNode: VNode): VNode {
   }
 }
 
-function update(vNode: VNode) {
+function update<T>(vNode: VNode<T>) {
   if (!vNode) {
     return;
   }
