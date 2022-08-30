@@ -39,3 +39,30 @@ export function autoloadPages(
     }
   };
 }
+
+export function autoloadFavicon(path: "string") {
+  return (app: any) => {
+    app.getProtocol("http")?.router.add({
+      path: "/favicon.ico",
+      method: "GET",
+      handler: async () => {
+        try {
+          const file = await Deno.open(path);
+          return new Response(
+            file.readable,
+            {
+              headers: {
+                "content-type": "image/vnd.microsoft.icon",
+              },
+            },
+          );
+        } catch (e) {
+          if (e instanceof Deno.errors.NotFound) {
+            throw new Error("Not able to load favicon");
+          }
+          throw e;
+        }
+      },
+    });
+  };
+}
