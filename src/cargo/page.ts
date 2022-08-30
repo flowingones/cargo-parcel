@@ -1,5 +1,6 @@
 import { bodyAttributes } from "./body.ts";
 import { AST, astToString, tag } from "./deps.ts";
+import { Footer } from "./footer.ts";
 import { getHead, Head } from "./head.ts";
 import { htmlAttributes } from "./html.ts";
 import { type Integration } from "./tasks/autoload.ts";
@@ -14,6 +15,13 @@ interface PageProps {
 export function page(props: PageProps) {
   // TODO: Pass in page props
   const tree = AST.create(tag(props.component, null, []));
+
+  // find islands
+
+  // create frontend bundle
+
+  // add frontend bundle to scripts
+
   const component = astToString(tree);
 
   const head = getHead();
@@ -38,6 +46,7 @@ interface HtmlProps {
   head?: Head;
   htmlAttributes?: string[];
   bodyAttributes?: string[];
+  footer?: Footer;
 }
 
 function html(props: HtmlProps) {
@@ -49,7 +58,7 @@ function html(props: HtmlProps) {
     props.head?.script?.join("") || ""
   }${props.head?.noscript?.join("") || ""}${
     props.head?.title || ""
-  }</head><body ${
-    props.bodyAttributes?.join(" ") || ""
-  }>${props.content}</body></html>`;
+  }</head><body ${props.bodyAttributes?.join(" ") || ""}>${props.content}${
+    props.footer?.script?.join("") || ""
+  }${props.footer?.noscript?.join("") || ""}</body></html>`;
 }

@@ -11,7 +11,7 @@ export type State<T> = [
   componentId: symbol,
 ];
 
-const stateCache: State<any>[] = [];
+const stateCache: State<unknown>[] = [];
 
 export function state<T>(value: T): State<T> {
   if (!componentsCache.toCreate.length) {
@@ -34,7 +34,7 @@ export function state<T>(value: T): State<T> {
 
   // If VComponent is created and has state return VComponent state
   if (vComponent.mode === 1 && vComponent.state?.length) {
-    stateCache.push(...vComponent.state);
+    stateCache.push(...<State<unknown>[]> vComponent.state);
     vComponent.state = [];
     const current: State<T> = returnState();
     vComponent.state.push(current);
