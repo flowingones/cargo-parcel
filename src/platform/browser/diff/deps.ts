@@ -1,8 +1,7 @@
 export {
-  AST,
-  tag,
   type VComponent,
   type VElement,
   type VNode,
+  type VNodeRef,
   type VText,
-} from "../../mod.ts";
+} from "../../../mod.ts";

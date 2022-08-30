@@ -1,55 +1,78 @@
-import type { ChangeSet } from "../__dispatch.ts";
+import type { VNode, VNodeRef, VText } from "./deps.ts";
+import type { ChangeSet } from "./mod.ts";
 
-interface TextPayload {
-  text: string;
+export interface CreateTextPayload {
+  vNode: VText<Node>;
 }
 
-export interface TextChangeSet extends ChangeSet<TextPayload> {
-  node: Node | Text;
+export interface AttachTextPayload {
+  parentVNode: VNode<Node>;
+  vNode: VText<Node>;
+}
+
+export interface ReplaceTextPayload {
+  vNode: VText<Node>;
+}
+
+export interface UpdateTextPayload {
+  vNode: VText<Node>;
+}
+
+export interface DeleteTextPayload {
+  vNode: VText<Node>;
+}
+
+export interface TextChangeSet extends
+  ChangeSet<
+    | CreateTextPayload
+    | AttachTextPayload
+    | ReplaceTextPayload
+    | UpdateTextPayload
+    | DeleteTextPayload
+  > {
   type: "text";
-}
-interface CreateTextChangeSet extends TextChangeSet {
-  action: "create";
-  node: Text;
 }
 
 export function text(changeSet: TextChangeSet): void {
   if (changeSet.action === "create") {
-    create(<CreateTextChangeSet> changeSet);
+    create(<CreateTextPayload> changeSet.payload);
+  }
+  if (changeSet.action === "attach") {
+    attach(<AttachTextPayload> changeSet.payload);
+  }
+  if (changeSet.action === "replace") {
+    replace(<ReplaceTextPayload> changeSet.payload);
   }
   if (changeSet.action === "update") {
-    update(changeSet);
+    update(<UpdateTextPayload> changeSet.payload);
   }
   if (changeSet.action === "delete") {
-    remove(changeSet);
+    remove(<DeleteTextPayload> changeSet.payload);
   }
 }
 
-/**
- * @deprecated us text() instead.
- */
-export const dispatchTextChange = text;
-
-function create(changeSet: CreateTextChangeSet) {
-  const textNode = new Text(changeSet.payload.text);
-  changeSet.node.appendChild(textNode);
+function create(payload: CreateTextPayload) {
+  const vNode = payload.vNode;
+  const textNode = new Text(vNode.text.toString());
+  vNode.nodeRef = textNode;
 }
 
-function update(changeSet: TextChangeSet) {
-  changeSet.node.textContent = changeSet.payload.text;
+function attach(payload: AttachTextPayload) {
+  (<Node> (<VNodeRef<Node>> payload.parentVNode).nodeRef).appendChild(
+    <Node> (payload.vNode).nodeRef,
+  );
 }
 
-function remove(changeSet: TextChangeSet) {
-  (<Text> changeSet.node).remove();
+function replace(payload: ReplaceTextPayload) {
+  const text = new Text(String(payload.vNode.text));
+  payload.vNode.nodeRef?.parentNode?.replaceChild(text, payload.vNode.nodeRef);
 }
 
-export function changeText(node: Text, text: string): TextChangeSet {
-  return {
-    type: "text",
-    action: "update",
-    node,
-    payload: {
-      text,
-    },
-  };
+function update(payload: UpdateTextPayload) {
+  (<Text> payload.vNode.nodeRef).textContent = payload.vNode
+    .text.toString();
+}
+
+function remove(payload: DeleteTextPayload) {
+  (<Text> payload.vNode.nodeRef).remove();
 }

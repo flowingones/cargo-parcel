@@ -1,6 +1,7 @@
-import "../../jsx/types.ts";
+import { AST, VComponent, VElement, VNode, VText } from "./deps.ts";
+import "../../types.ts";
 
-import { componentsCache } from "./deps.ts";
+import { escapeHtml } from "./utils.ts";
 
 const selfClosingTags = [
   "area",
@@ -19,48 +20,50 @@ const selfClosingTags = [
   "wbr",
 ];
 
-export function render(
-  node: JSX.Element,
-) {
-  return parse(node);
+export function astToString(vNode: VNode<unknown>) {
+  return stringify(vNode);
 }
 
-function parse(node: JSX.Node): string {
-  if (!node) return "";
+export function renderToString(
+  node: JSX.Node,
+): string {
+  const tree = AST.create<unknown>(node);
+  return stringify(tree);
+}
 
-  if (typeof node === "string" || typeof node === "number") {
-    return node.toString();
+export function stringify<T>(vNode: VNode<T>): string {
+  // VNode is null or undefined
+  if (!vNode) return "";
+
+  // VNode is VText
+  if (
+    vNode.type === "text"
+  ) {
+    return escapeHtml((<VText<T>> vNode).text.toString());
   }
 
-  if (typeof (<JSX.Element> node).tag === "string") {
-    if (selfClosingTags.includes(<string> node.tag)) {
-      return `<${(<JSX.Element> node).tag} ${stringFrom(node.props)}/>`;
-    }
-
-    return `<${(<JSX.Element> node).tag}${stringFrom(node.props)}>${
-      node.children?.map((child) => parse(child)).join("")
-    }</${(<JSX.Element> node).tag}>`;
+  // VNode is VElement
+  if (vNode.type === "element") {
+    return elementToString(<VElement<T>> vNode);
   }
 
-  if (typeof node.tag === "function") {
-    const props: JSX.ElementProps = node.props;
-    props.children = node.children;
-
-    componentsCache.toCreate.push({
-      id: Symbol(),
-      fn: node.tag,
-      props,
-      hooks: {},
-      state: [],
-    });
-
-    const str = parse(node.tag(props));
-    componentsCache.toCreate.pop();
-
-    return str;
+  //VNode is VComponent
+  if (vNode.type === "component") {
+    return stringify(<VComponent<T>> vNode.ast);
   }
 
-  return "";
+  throw Error("Node type is not supported!");
+}
+
+function elementToString<T>(vNode: VElement<T>): string {
+  if (selfClosingTags.includes(vNode.tag)) {
+    return `<${vNode.tag}${stringFrom(vNode.props)}/>`;
+  }
+
+  const { props, children } = vNode;
+  return `<${vNode.tag}${stringFrom(props)}>${
+    children?.map((child) => stringify(child)).join("")
+  }</${vNode.tag}>`;
 }
 
 function stringFrom(attributes: JSX.IntrinsicElements): string {
@@ -68,7 +71,7 @@ function stringFrom(attributes: JSX.IntrinsicElements): string {
   for (const key in attributes) {
     const attribute = attributes[key];
     if (typeof attribute === "string") {
-      attributesString += ` ${key}="${attribute}"`;
+      attributesString += ` ${key}="${escapeHtml(attribute)}"`;
     }
     if (typeof attribute === "boolean") {
       attributesString += ` ${key}`;

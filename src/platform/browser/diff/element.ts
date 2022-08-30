@@ -1,53 +1,100 @@
-import type { VNode } from "../../../ast.ts";
-import type { ChangeSet } from "../__dispatch.ts";
+import { type VElement } from "./deps.ts";
+import type { ChangeSet } from "./mod.ts";
 
-export interface ElementChangePayload {
-  vnode: VNode;
-  node?: Node;
+export interface CreateElementPayload {
+  vNode: VElement<Node>;
 }
 
-export interface ElementChangeSet extends ChangeSet<ElementChangePayload> {
-  type: "node";
+export interface AttachElementPayload {
+  parentVNode: VElement<Node>;
+  vNode: VElement<Node>;
+}
+
+export interface ReplaceElementPayload {
+  node: Node;
+  vNode: VElement<Node>;
+}
+
+export interface UpdateElementPayload {
+  parentVNode: VElement<Node>;
+  node: Node;
+  vNode: VElement<Node>;
+}
+
+export interface DeleteElementPayload {
+  parentVNode: VElement<Node>;
+  vNode: VElement<Node>;
+}
+
+export interface ElementChangeSet extends
+  ChangeSet<
+    | CreateElementPayload
+    | AttachElementPayload
+    | ReplaceElementPayload
+    | UpdateElementPayload
+    | DeleteElementPayload
+  > {
+  type: "element";
+  action: "create" | "attach" | "replace" | "update" | "delete";
 }
 
 export function element(change: ElementChangeSet): void {
   if (change.action === "create") {
-    create(change.node, change.payload.vnode);
+    create(<CreateElementPayload> change.payload);
   }
 
-  if (change.payload.node) {
-    if (change.action === "update") {
-      update(change.node, change.payload.node);
-    }
-    if (change.action === "delete") {
-      remove(change.node, change.payload.node);
-    }
+  if (change.action === "attach") {
+    attach(<AttachElementPayload> change.payload);
+  }
+
+  if (change.action === "replace") {
+    replace(<ReplaceElementPayload> change.payload);
+  }
+
+  if (change.action === "update") {
+    update(<UpdateElementPayload> change.payload);
+  }
+
+  if (change.action === "delete") {
+    remove(<DeleteElementPayload> change.payload);
   }
 }
 
-function create(parentNode: Node, vnode: VNode): void {
-  if (!vnode) return;
+function create(payload: CreateElementPayload): void {
+  if (!payload.vNode) return;
+  payload.vNode.nodeRef = document.createElement(payload.vNode.tag);
+}
 
-  if (!(parentNode instanceof Document)) {
-    throw new Error('The parent node is not of type "Document"!');
+function attach(payload: AttachElementPayload): void {
+  if (payload.vNode.type === "element" && payload.vNode.nodeRef) {
+    (<Node> payload.parentVNode.nodeRef)?.appendChild(payload.vNode.nodeRef);
   }
+}
 
-  if ("tag" in vnode) {
-    const node = parentNode.createElement(vnode.tag);
-    vnode.nodeRef = node;
-    parentNode.appendChild(node);
+function replace(payload: ReplaceElementPayload): void {
+  if (payload.vNode.type === "element") {
+    const node = document.createElement(payload.vNode.tag);
+
+    payload.node.parentElement?.replaceChild(
+      node,
+      payload.node,
+    );
+
+    payload.vNode.nodeRef = node;
   }
 }
 
 function update(
-  node: Node,
-  newNode: Node,
+  payload: UpdateElementPayload,
 ): void {
-  if (node instanceof Element) {
-    node.replaceWith(newNode);
-  }
+  (<Node> payload.parentVNode.nodeRef).replaceChild(
+    <Node> payload.vNode.nodeRef,
+    payload.node,
+  );
 }
 
-function remove(parentNode: Node, node: Node): void {
-  parentNode.removeChild(node);
+function remove(payload: DeleteElementPayload): void {
+  (<Node> payload.parentVNode.nodeRef).removeChild(
+    <Node> payload.vNode.nodeRef,
+  );
 }
