@@ -32,7 +32,9 @@ ${exports(islands)}`;
 }
 
 function imports(islands: Island[]) {
-  return islands.map((island) => `import ${island[1]} from "./${island[0]}";\n`)
+  return islands.map((island) =>
+    `import ${island[1]} from "../${island[0]}";\n`
+  )
     .join("");
 }
 
