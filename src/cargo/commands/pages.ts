@@ -1,4 +1,4 @@
-import { dirname, parse, parseArgs, walk } from "../deps.ts";
+import { dirname, join, parse, parseArgs, walk } from "../deps.ts";
 
 interface Page {
   path: string;
@@ -52,7 +52,7 @@ export const pages = {
   ${exports(path, pages)}
 }`;
 
-  await Deno.writeTextFile(".pages.ts", content);
+  await Deno.writeTextFile(join(".manifest", ".pages.ts"), content);
 }
 
 function imports(pages: Page[]): string {
@@ -71,6 +71,6 @@ export function pages() {
   return {
     names: ["pa", "pages"],
     description: `Generate ".pages.ts" file`,
-    task: command,
+    command,
   };
 }
