@@ -41,7 +41,7 @@ function exports(islands: Island[]) {
 ${islands.map((island) => `"  ${island[0]}": ${island[1]},\n`).join("")}}`;
 }
 
-export function island() {
+export function islands() {
   return {
     names: ["i", "islands"],
     description: 'Generate ".inslands.ts" file',
