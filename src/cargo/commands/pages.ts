@@ -57,7 +57,7 @@ export const pages = {
 
 function imports(pages: Page[]): string {
   return pages.map((route, index) => {
-    return `import * as P${index} from "./${route.path}/${route.fileName}";`;
+    return `import * as P${index} from "../${route.path}/${route.fileName}";`;
   }).join("\n");
 }
 
