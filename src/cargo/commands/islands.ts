@@ -44,7 +44,7 @@ ${islands.map((island) => `"  ${island[0]}": ${island[1]},\n`).join("")}}`;
 export function islands() {
   return {
     names: ["i", "islands"],
-    description: 'Generate ".inslands.ts" file',
+    description: 'Generate ".islands.ts" file',
     task: command,
   };
 }
