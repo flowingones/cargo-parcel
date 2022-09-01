@@ -1,4 +1,4 @@
-import { parseArgs, walk } from "../deps.ts";
+import { join, parseArgs, walk } from "../deps.ts";
 
 type Island = [string, string];
 
@@ -26,7 +26,7 @@ async function write(islands: Island[]) {
 ${imports(islands)}
 ${exports(islands)}`;
 
-  await Deno.writeTextFile(".islands.ts", content);
+  await Deno.writeTextFile(join(".manifest", ".islands.ts"), content);
 
   return `File ".islands.ts" sucessfully created!`;
 }
