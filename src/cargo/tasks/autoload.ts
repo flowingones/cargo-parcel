@@ -40,7 +40,7 @@ export function autoloadPages(
   };
 }
 
-export function autoloadFavicon(path: "string") {
+export function autoloadFavicon(path: string) {
   return (app: any) => {
     app.getProtocol("http")?.router.add({
       path: "/favicon.ico",
