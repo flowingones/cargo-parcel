@@ -71,6 +71,6 @@ export function pages() {
   return {
     names: ["pa", "pages"],
     description: `Generate ".pages.ts" file`,
-    task: command,
+    command,
   };
 }

@@ -45,6 +45,6 @@ export function islands() {
   return {
     names: ["i", "islands"],
     description: 'Generate ".islands.ts" file',
-    task: command,
+    command,
   };
 }
