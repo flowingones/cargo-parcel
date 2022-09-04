@@ -16,7 +16,7 @@ export async function bundle(props: BundleProps) {
     entryPoints.push(`./${island}`);
   }
 
-  console.log(Deno.cwd());
+  console.log(new URL("./import_map.json", `file://${Deno.cwd()}`));
 
   console.log(
     (await esbuild.build({
