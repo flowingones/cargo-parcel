@@ -16,15 +16,13 @@ export async function bundle(props: BundleProps) {
     entryPoints.push(`./${island}`);
   }
 
-  console.log(new URL("./import_map.json", `file://${Deno.cwd()}`));
-
   console.log(
     (await esbuild.build({
       /*
        * Supress error in esbuild 15.x
        @ts-ignore */
       plugins: [denoPlugin({
-        importMapURL: new URL("./import_map.json", `file://${Deno.cwd()}`),
+        importMapURL: new URL("./import_map.json", `file://${Deno.cwd()}/`),
       })],
       entryPoints,
       bundle: true,
@@ -32,12 +30,13 @@ export async function bundle(props: BundleProps) {
       treeShaking: true,
       splitting: true,
       outdir: ".",
-      write: false,
+      minify: true,
+      //write: false,
       jsxFactory: "tag",
       absWorkingDir: Deno.cwd(),
       target: ["chrome99", "firefox99", "safari15"],
     })).outputFiles.forEach((file) => {
-      console.log(file.path);
+      console.log(file.text);
     }),
   );
 }
