@@ -16,6 +16,8 @@ export async function bundle(props: BundleProps) {
     entryPoints.push(`./${island}`);
   }
 
+  console.log(Deno.cwd());
+
   console.log(
     (await esbuild.build({
       /*
