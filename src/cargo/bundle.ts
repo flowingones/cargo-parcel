@@ -1,7 +1,7 @@
 import { denoPlugin, esbuild } from "./deps.ts";
 
 interface BundleProps {
-  pages: Record<string, JSX.Node>;
+  pages: Record<string, any>;
   islands: Record<string, JSX.Node>;
 }
 
@@ -31,7 +31,8 @@ export async function bundle(props: BundleProps) {
       splitting: true,
       outdir: ".",
       minify: true,
-      //write: false,
+      platform: "neutral",
+      write: false,
       jsxFactory: "tag",
       absWorkingDir: Deno.cwd(),
       target: ["chrome99", "firefox99", "safari15"],

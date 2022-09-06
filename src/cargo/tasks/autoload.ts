@@ -1,6 +1,10 @@
 import { bundle } from "../bundle.ts";
 import { mappedPath, page } from "../mod.ts";
 
+export interface Page {
+  default: JSX.Node;
+}
+
 export interface Integration {
   getStyles(...args: any[]): string;
 }
@@ -10,7 +14,7 @@ interface TaskConfig {
 }
 
 export function autoloadPages(
-  pages: Record<string, JSX.Node>,
+  pages: Record<string, Page>,
   islands?: Record<string, JSX.Node>,
   config?: TaskConfig,
 ) {
@@ -23,7 +27,7 @@ export function autoloadPages(
     }
 
     for (const route in pages) {
-      const component: any = pages[route];
+      const currentPage: any = pages[route];
 
       app.getProtocol("http")?.router.add({
         path: mappedPath(route),
@@ -31,7 +35,7 @@ export function autoloadPages(
         handler: () => {
           return new Response(
             page({
-              component: component.default,
+              component: currentPage.default,
               cssIntegration: config?.cssIntegration,
             }),
             {
