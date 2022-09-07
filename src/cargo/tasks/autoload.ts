@@ -19,9 +19,8 @@ export function autoloadPages(
   config?: TaskConfig,
 ) {
   return async (app: any) => {
-    if (islands) {
+    if (islands && Object.keys(islands).length) {
       await bundle({
-        pages,
         islands,
       });
     }

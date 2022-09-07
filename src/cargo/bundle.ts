@@ -1,16 +1,11 @@
 import { denoPlugin, esbuild } from "./deps.ts";
 
 interface BundleProps {
-  pages: Record<string, any>;
   islands: Record<string, JSX.Node>;
 }
 
 export async function bundle(props: BundleProps) {
   const entryPoints: string[] = [];
-
-  for (const page in props.pages) {
-    entryPoints.push(`./pages${page}.tsx`);
-  }
 
   for (const island in props.islands) {
     entryPoints.push(`./${island}`);
