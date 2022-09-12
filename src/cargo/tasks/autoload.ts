@@ -1,33 +1,59 @@
 import { bundle } from "../bundle.ts";
-import { mappedPath, page } from "../mod.ts";
+import { AST, parse, tag, VComponent } from "../deps.ts";
+import {
+  findIslands,
+  type Integration,
+  Island,
+  mappedPath,
+  page,
+} from "../mod.ts";
 
 export interface Page {
   default: JSX.Node;
-}
-
-export interface Integration {
-  getStyles(...args: any[]): string;
 }
 
 interface TaskConfig {
   cssIntegration?: Integration;
 }
 
-export function autoloadPages(
-  pages: Record<string, Page>,
-  islands?: Record<string, JSX.Node>,
-  config?: TaskConfig,
-) {
+interface AutoloadPagesProps {
+  pages: Record<string, Page>;
+  islands?: Record<string, JSX.Component>;
+  config?: TaskConfig;
+}
+
+export function autoloadPages(props: AutoloadPagesProps) {
   return async (app: any) => {
-    if (islands) {
-      await bundle({
-        pages,
-        islands,
+    // Register bundle routes
+    if (props.islands && Object.keys(props.islands).length) {
+      (await bundle({
+        islands: props.islands,
+      }))?.forEach((file) => {
+        app.getProtocol("http")?.router.add({
+          path: `/${parse(file.path).name.replaceAll("$", "")}.js`,
+          method: "GET",
+          handler: () => {
+            return new Response(file.contents, {
+              headers: {
+                "content-type": "application/javascript",
+              },
+            });
+          },
+        });
       });
     }
 
-    for (const route in pages) {
-      const currentPage: any = pages[route];
+    for (const route in props.pages) {
+      const currentPage: any = props.pages[route];
+      let islands: Island[];
+
+      const vNode = <VComponent<unknown>> AST.create(
+        tag(currentPage.default, null, []),
+      );
+
+      if (props.islands) {
+        islands = findIslands(vNode, props.islands);
+      }
 
       app.getProtocol("http")?.router.add({
         path: mappedPath(route),
@@ -35,8 +61,9 @@ export function autoloadPages(
         handler: () => {
           return new Response(
             page({
-              component: currentPage.default,
-              cssIntegration: config?.cssIntegration,
+              vNode,
+              cssIntegration: props.config?.cssIntegration,
+              islands,
             }),
             {
               headers: {

@@ -1,48 +1,58 @@
 import { bodyAttributes } from "./body.ts";
-import { AST, astToString, tag } from "./deps.ts";
-import { Footer } from "./footer.ts";
-import { getHead, Head } from "./head.ts";
+import { parse, VNode, vNodeToString } from "./deps.ts";
+import { Footer, footer, getFooter } from "./footer.ts";
+import { getHead, Head, head } from "./head.ts";
 import { htmlAttributes } from "./html.ts";
-import { type Integration } from "./tasks/autoload.ts";
+import { type Island } from "./islands.ts";
 
 export const cleanup: Array<() => void> = [];
 
+export interface Integration {
+  getStyles(...args: any[]): string;
+}
+
 interface PageProps {
-  component: JSX.Component;
+  vNode: VNode<unknown>;
   cssIntegration?: Integration;
+  islands?: Island[];
 }
 
 export function page(props: PageProps) {
-  // TODO: Pass in page props
-  const tree = AST.create(tag(props.component, null, []));
-
-  // find islands
-
-  // create frontend bundle
-
-  // add frontend bundle to scripts
-
-  const component = astToString(tree);
-
-  const head = getHead();
-
-  if (props.cssIntegration) {
-    head.link
-      ? head.link.push(props.cssIntegration.getStyles())
-      : head.link = [props.cssIntegration.getStyles()];
+  if (props.islands?.length) {
+    footer({
+      script: [`<script type="module">import { launch } from "/main.js";
+${
+        props.islands.map((island) =>
+          `import ${
+            parse(island.path).name.replaceAll("-", "")
+          } from "/island-${parse(island.path).name}.js";\n`
+        ).join("")
+      }
+launch([${
+        props.islands.map((island) => {
+          return `{ id: "${island.id}", node: ${
+            parse(island.path).name.replaceAll("-", "")
+          }}`;
+        }).join()
+      }]);</script>`],
+    });
   }
 
-  const content = html({
-    content: component,
-    head,
+  if (props.cssIntegration) {
+    head({ link: [props.cssIntegration?.getStyles()] });
+  }
+
+  return html({
+    body: vNodeToString(props.vNode),
+    head: getHead(),
     htmlAttributes: htmlAttributes(),
     bodyAttributes: bodyAttributes(),
+    footer: getFooter(),
   });
-  return content;
 }
 
 interface HtmlProps {
-  content: string;
+  body: string;
   head?: Head;
   htmlAttributes?: string[];
   bodyAttributes?: string[];
@@ -58,7 +68,7 @@ function html(props: HtmlProps) {
     props.head?.script?.join("") || ""
   }${props.head?.noscript?.join("") || ""}${
     props.head?.title || ""
-  }</head><body ${props.bodyAttributes?.join(" ") || ""}>${props.content}${
+  }</head><body ${props.bodyAttributes?.join(" ") || ""}>${props.body}${
     props.footer?.script?.join("") || ""
   }${props.footer?.noscript?.join("") || ""}</body></html>`;
 }

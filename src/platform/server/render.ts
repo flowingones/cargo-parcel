@@ -20,7 +20,7 @@ const selfClosingTags = [
   "wbr",
 ];
 
-export function astToString(vNode: VNode<unknown>) {
+export function vNodeToString(vNode: VNode<unknown>) {
   return stringify(vNode);
 }
 
@@ -31,7 +31,7 @@ export function renderToString(
   return stringify(tree);
 }
 
-export function stringify<T>(vNode: VNode<T>): string {
+function stringify<T>(vNode: VNode<T>): string {
   // VNode is null or undefined
   if (!vNode) return "";
 
