@@ -21,7 +21,7 @@ async function command(args: string[]) {
     }
     return await write(cache);
   } catch (e) {
-    console.log(e.message);
+    console.error(e.message);
     return 'Error occured while creating ".islands.ts" manifest.';
   }
 }
