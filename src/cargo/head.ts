@@ -8,14 +8,14 @@ export interface Head {
   style?: string[];
 }
 
-let headCache: Head = {};
+let cache: Head = {};
 
 export function head(props: Head): void {
-  headCache = { ...headCache, ...props };
+  cache = { ...cache, ...props };
 }
 
 export function getHead(): Head {
-  const { ...headTags } = headCache;
-  headCache = {};
+  const { ...headTags } = cache;
+  cache = {};
   return headTags;
 }
