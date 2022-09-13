@@ -1,4 +1,6 @@
-export interface Footer {
+import { merge } from "./head.ts";
+
+export interface Footer extends Record<string, string | string[] | undefined> {
   script?: string[];
   noscript?: string[];
 }
@@ -6,7 +8,7 @@ export interface Footer {
 let cache: Footer = {};
 
 export function footer(props: Footer): void {
-  cache = { ...cache, ...props };
+  cache = merge(props, cache);
 }
 
 export function getFooter(): Footer {
