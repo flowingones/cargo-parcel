@@ -1,9 +1,9 @@
 import { bodyAttributes } from "./body.ts";
-import { parse, VNode, vNodeToString } from "./deps.ts";
+import { AST, parse, tag, VComponent, VNode, vNodeToString } from "./deps.ts";
 import { Footer, footer, getFooter } from "./footer.ts";
 import { getHead, Head, head } from "./head.ts";
 import { htmlAttributes } from "./html.ts";
-import { type Island } from "./islands.ts";
+import { findIslands, type Island } from "./islands.ts";
 
 export const cleanup: Array<() => void> = [];
 
@@ -12,24 +12,34 @@ export interface Integration {
 }
 
 interface PageProps {
-  vNode: VNode<unknown>;
+  component: JSX.Component;
   cssIntegration?: Integration;
-  islands?: Island[];
+  islands?: Record<string, JSX.Component>;
 }
 
 export function page(props: PageProps) {
-  if (props.islands?.length) {
+  let islands: Island[] = [];
+
+  const vNode = <VComponent<unknown>> AST.create(
+    tag(props.component, null, []),
+  );
+
+  if (props.islands) {
+    islands = findIslands(vNode, props.islands);
+  }
+
+  if (islands.length) {
     footer({
       script: [`<script type="module">import { launch } from "/main.js";
 ${
-        props.islands.map((island) =>
+        islands.map((island) =>
           `import ${
             parse(island.path).name.replaceAll("-", "")
           } from "/island-${parse(island.path).name}.js";\n`
         ).join("")
       }
 launch([${
-        props.islands.map((island) => {
+        islands.map((island) => {
           return `{ id: "${island.id}", node: ${
             parse(island.path).name.replaceAll("-", "")
           }}`;
@@ -43,7 +53,7 @@ launch([${
   }
 
   return html({
-    body: vNodeToString(props.vNode),
+    body: vNodeToString(vNode),
     head: getHead(),
     htmlAttributes: htmlAttributes(),
     bodyAttributes: bodyAttributes(),

@@ -1,15 +1,9 @@
 import { bundle } from "../bundle.ts";
-import { AST, parse, tag, VComponent } from "../deps.ts";
-import {
-  findIslands,
-  type Integration,
-  Island,
-  mappedPath,
-  page,
-} from "../mod.ts";
+import { parse } from "../deps.ts";
+import { type Integration, mappedPath, page } from "../mod.ts";
 
 export interface Page {
-  default: JSX.Node;
+  default: JSX.Component;
 }
 
 interface TaskConfig {
@@ -44,16 +38,7 @@ export function autoloadPages(props: AutoloadPagesProps) {
     }
 
     for (const route in props.pages) {
-      const currentPage: any = props.pages[route];
-      let islands: Island[];
-
-      const vNode = <VComponent<unknown>> AST.create(
-        tag(currentPage.default, null, []),
-      );
-
-      if (props.islands) {
-        islands = findIslands(vNode, props.islands);
-      }
+      const component: JSX.Component = props.pages[route].default;
 
       app.getProtocol("http")?.router.add({
         path: mappedPath(route),
@@ -61,9 +46,9 @@ export function autoloadPages(props: AutoloadPagesProps) {
         handler: () => {
           return new Response(
             page({
-              vNode,
+              component,
               cssIntegration: props.config?.cssIntegration,
-              islands,
+              islands: props.islands,
             }),
             {
               headers: {
