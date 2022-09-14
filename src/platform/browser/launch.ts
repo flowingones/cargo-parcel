@@ -32,10 +32,8 @@ function sync(node: Node, vNode: VNode<Node>) {
 }
 
 export function launch(islands: Island[]) {
-  console.log(islands);
   for (const island of islands) {
     const node = document.querySelector(`.${island.class}`);
-    console.log(node);
     if (node) {
       const vNode = <VComponent<Node>> AST.create<Node>(
         tag(island.node, null, []),

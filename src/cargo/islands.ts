@@ -41,7 +41,7 @@ function isIsland(
   for (const key in islands) {
     if (islands[key] === vComponent.fn) {
       return {
-        class: crypto.randomUUID().slice(-5),
+        class: `_box_${crypto.randomUUID().slice(-6)}`,
         path: parse(key).name.replaceAll("$", ""),
       };
     }
