@@ -1,14 +1,15 @@
-import { bodyAttributes } from "./body.ts";
-import { AST, parse, tag, VComponent, VNode, vNodeToString } from "./deps.ts";
-import { Footer, footer, getFooter } from "./footer.ts";
-import { getHead, Head, head } from "./head.ts";
+import { AST, parse, tag, VComponent, vNodeToString } from "./deps.ts";
 import { htmlAttributes } from "./html.ts";
+import { getHead, Head, head } from "./head.ts";
+import { bodyAttributes } from "./body.ts";
+import { Footer, footer, getFooter } from "./footer.ts";
 import { findIslands, type Island } from "./islands.ts";
 
 export const cleanup: Array<() => void> = [];
 
 export interface Integration {
   getStyles(...args: any[]): string;
+  getConfig(): any;
 }
 
 interface PageProps {
@@ -40,7 +41,7 @@ ${
       }
 launch([${
         islands.map((island) => {
-          return `{ id: "${island.id}", node: ${
+          return `{ class: "${island.class}", node: ${
             parse(island.path).name.replaceAll("-", "")
           }}`;
         }).join()

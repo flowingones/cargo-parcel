@@ -14,7 +14,7 @@ import {
 } from "./deps.ts";
 
 interface Island {
-  id: string;
+  class: string;
   node: JSX.Component;
 }
 
@@ -32,14 +32,19 @@ function sync(node: Node, vNode: VNode<Node>) {
 }
 
 export function launch(islands: Island[]) {
+  console.log(islands);
   for (const island of islands) {
-    const node = document.getElementById(island.id);
+    const node = document.querySelector(`.${island.class}`);
     console.log(node);
     if (node) {
       const vNode = <VComponent<Node>> AST.create<Node>(
         tag(island.node, null, []),
       );
-      (<VElement<Node>> vNode.ast).props.id = island.id;
+      typeof (<VElement<Node>> vNode.ast).props.class === "string"
+        ? (<VElement<Node>> vNode.ast).props.class = `${
+          (<VElement<Node>> vNode.ast).props.class
+        } ${island.class}`
+        : (<VElement<Node>> vNode.ast).props.class = island.class;
       sync(node, vNode);
     }
   }
