@@ -1,7 +1,7 @@
 import { parse, VComponent, VElement, VNode } from "./deps.ts";
 
 export interface Island {
-  id: string;
+  class: string;
   path: string;
 }
 
@@ -22,7 +22,10 @@ export function findIslands(
   if (vNode?.type === "component") {
     const island = isIsland(vNode, islands);
     if (island) {
-      (<VElement<unknown>> vNode.ast).props.id = island.id;
+      (typeof (<VElement<unknown>> vNode.ast).props.class === "string")
+        ? (<VElement<unknown>> vNode.ast).props.class =
+          (<VElement<unknown>> vNode.ast).props.class + " " + island.class
+        : (<VElement<unknown>> vNode.ast).props.class = island.class;
       return [island];
     }
     return [...findIslands(vNode.ast, islands)];
@@ -38,10 +41,10 @@ function isIsland(
   for (const key in islands) {
     if (islands[key] === vComponent.fn) {
       return {
-        id: crypto.randomUUID().slice(-5),
+        class: crypto.randomUUID().slice(-5),
         path: parse(key).name.replaceAll("$", ""),
       };
     }
   }
-  return undefined;
+  return;
 }
