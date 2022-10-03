@@ -2,6 +2,7 @@ import { type VElement } from "./deps.ts";
 import type { ChangeSet } from "./mod.ts";
 
 export interface CreateElementPayload {
+  parentVNode: VElement<Node>;
   vNode: VElement<Node>;
 }
 
@@ -40,28 +41,38 @@ export interface ElementChangeSet extends
 
 export function element(change: ElementChangeSet): void {
   if (change.action === "create") {
-    create(<CreateElementPayload> change.payload);
+    return create(<CreateElementPayload> change.payload);
   }
 
   if (change.action === "attach") {
-    attach(<AttachElementPayload> change.payload);
+    return attach(<AttachElementPayload> change.payload);
   }
 
   if (change.action === "replace") {
-    replace(<ReplaceElementPayload> change.payload);
+    return replace(<ReplaceElementPayload> change.payload);
   }
 
   if (change.action === "update") {
-    update(<UpdateElementPayload> change.payload);
+    return update(<UpdateElementPayload> change.payload);
   }
 
   if (change.action === "delete") {
-    remove(<DeleteElementPayload> change.payload);
+    return remove(<DeleteElementPayload> change.payload);
   }
+  console.error(
+    `Change action not supported: ${change.action}`,
+    change.payload,
+  );
 }
 
 function create(payload: CreateElementPayload): void {
   if (!payload.vNode) return;
+
+  if (isSVG(payload)) {
+    document.createElementNS("http://www.w3.org/2000/svg", payload.vNode.tag);
+    return;
+  }
+
   payload.vNode.nodeRef = document.createElement(payload.vNode.tag);
 }
 
@@ -97,4 +108,15 @@ function remove(payload: DeleteElementPayload): void {
   (<Node> payload.parentVNode.nodeRef).removeChild(
     <Node> payload.vNode.nodeRef,
   );
+}
+
+function isSVG(payload: CreateElementPayload): boolean {
+  if (
+    payload.vNode.tag === "svg" &&
+    typeof (<SVGElement> payload.parentVNode.nodeRef).ownerSVGElement !==
+      "undefined"
+  ) {
+    return true;
+  }
+  return false;
 }
