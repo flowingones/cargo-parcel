@@ -1,4 +1,4 @@
-// Cargo Parcel – Version 0.1.41
+// Cargo Parcel – Version 0.1.52
 export { tag } from "./tag.ts";
 export { componentsCache } from "./registry.ts";
 export {

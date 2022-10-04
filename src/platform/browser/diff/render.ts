@@ -42,6 +42,7 @@ function renderElement(
     type: "element",
     action: "create",
     payload: {
+      parentVNode,
       vNode,
     },
   });
