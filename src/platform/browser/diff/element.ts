@@ -69,7 +69,10 @@ function create(payload: CreateElementPayload): void {
   if (!payload.vNode) return;
 
   if (isSVG(payload)) {
-    document.createElementNS("http://www.w3.org/2000/svg", payload.vNode.tag);
+    payload.vNode.nodeRef = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      payload.vNode.tag,
+    );
     return;
   }
 
@@ -112,7 +115,7 @@ function remove(payload: DeleteElementPayload): void {
 
 function isSVG(payload: CreateElementPayload): boolean {
   if (
-    payload.vNode.tag === "svg" &&
+    payload.vNode.tag === "svg" ||
     typeof (<SVGElement> payload.parentVNode.nodeRef).ownerSVGElement !==
       "undefined"
   ) {
