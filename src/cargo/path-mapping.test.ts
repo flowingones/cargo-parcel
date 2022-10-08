@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.144.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.159.0/testing/asserts.ts";
 import { mappedPath } from "./path-mapping.ts";
 
 Deno.test("Handle path mapping", async (t) => {
