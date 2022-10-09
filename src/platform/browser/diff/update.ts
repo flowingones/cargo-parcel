@@ -28,31 +28,39 @@ function updateElement(
   previousVNode: VElement<Node>,
 ): ChangeSet<unknown>[] {
   const changes: ChangeSet<unknown>[] = [];
+  let skipPrevious = false;
 
-  const nodeRef = <Node> previousVNode.nodeRef;
+  vNode.nodeRef = <Node> previousVNode.nodeRef;
 
-  if (vNode.tag === previousVNode.tag) {
-    vNode.nodeRef = nodeRef;
-
-    // Update event listener
-    changes.push(
-      ...updateEvents(vNode, previousVNode),
-    );
-
-    // Update attributes
-    changes.push(
-      ...compareAttributes(vNode, previousVNode),
-    );
-
-    // Update children
-    changes.push(
-      ...updateChildren({
+  // Tag did change
+  if (vNode.tag !== previousVNode?.tag) {
+    changes.push({
+      type: "element",
+      action: "replace",
+      payload: {
         vNode,
-        previousVNode,
-      }),
-    );
-    return changes;
+      },
+    });
+    skipPrevious = true;
   }
+
+  // Update event listener
+  changes.push(
+    ...updateEvents(vNode, previousVNode),
+  );
+
+  // Update attributes
+  changes.push(
+    ...compareAttributes(vNode, previousVNode),
+  );
+
+  // Update children
+  changes.push(
+    ...updateChildren({
+      vNode,
+      previousVNode: skipPrevious ? undefined : previousVNode,
+    }),
+  );
 
   return changes;
 }
