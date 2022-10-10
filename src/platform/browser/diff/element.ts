@@ -12,7 +12,6 @@ export interface AttachElementPayload {
 }
 
 export interface ReplaceElementPayload {
-  node: Node;
   vNode: VElement<Node>;
 }
 
@@ -66,17 +65,11 @@ export function element(change: ElementChangeSet): void {
 }
 
 function create(payload: CreateElementPayload): void {
-  if (!payload.vNode) return;
-
-  if (isSVG(payload)) {
-    payload.vNode.nodeRef = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      payload.vNode.tag,
-    );
-    return;
-  }
-
-  payload.vNode.nodeRef = document.createElement(payload.vNode.tag);
+  if (!payload.vNode && !payload.parentVNode.nodeRef) return;
+  payload.vNode.nodeRef = createElement(
+    payload.vNode,
+    <Node> payload.parentVNode.nodeRef,
+  );
 }
 
 function attach(payload: AttachElementPayload): void {
@@ -87,11 +80,14 @@ function attach(payload: AttachElementPayload): void {
 
 function replace(payload: ReplaceElementPayload): void {
   if (payload.vNode.type === "element") {
-    const node = document.createElement(payload.vNode.tag);
+    const node = createElement(
+      payload.vNode,
+      <Node> (<Node> payload.vNode.nodeRef).parentNode,
+    );
 
-    payload.node.parentElement?.replaceChild(
+    payload.vNode.nodeRef?.parentNode?.replaceChild(
       node,
-      payload.node,
+      payload.vNode.nodeRef,
     );
 
     payload.vNode.nodeRef = node;
@@ -113,10 +109,16 @@ function remove(payload: DeleteElementPayload): void {
   );
 }
 
-function isSVG(payload: CreateElementPayload): boolean {
+function createElement(vNode: VElement<Node>, parentNode: Node): Node {
+  return isSVG(vNode.tag, parentNode)
+    ? document.createElementNS("http://www.w3.org/2000/svg", vNode.tag)
+    : document.createElement(vNode.tag);
+}
+
+function isSVG(tag: string, parentNode: Node): boolean {
   if (
-    payload.vNode.tag === "svg" ||
-    typeof (<SVGElement> payload.parentVNode.nodeRef).ownerSVGElement !==
+    tag === "svg" ||
+    typeof (<SVGElement> parentNode).ownerSVGElement !==
       "undefined"
   ) {
     return true;

@@ -64,8 +64,9 @@ function attach(payload: AttachTextPayload) {
 }
 
 function replace(payload: ReplaceTextPayload) {
-  const text = new Text(String(payload.vNode.text));
+  const text = new Text(`${payload.vNode.text}`);
   payload.vNode.nodeRef?.parentNode?.replaceChild(text, payload.vNode.nodeRef);
+  payload.vNode.nodeRef = text;
 }
 
 function update(payload: UpdateTextPayload) {

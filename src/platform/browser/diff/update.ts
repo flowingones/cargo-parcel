@@ -9,15 +9,23 @@ import {
 } from "./mod.ts";
 
 export function update(
-  vNode: VElement<Node> | VText<Node> | undefined,
-  previousVNode: VElement<Node> | VText<Node> | undefined,
+  vNode: VElement<Node> | VText<Node>,
+  previousVNode: VElement<Node> | VText<Node>,
 ): ChangeSet<unknown>[] {
   if (vNode?.type === "element" && previousVNode?.type === "element") {
     return updateElement(vNode, previousVNode);
   }
 
+  if (vNode?.type === "element" && previousVNode.type === "text") {
+    return replaceTextWithElement(vNode, previousVNode);
+  }
+
   if (vNode?.type === "text" && previousVNode?.type === "text") {
     return updateText(vNode, previousVNode);
+  }
+
+  if (vNode?.type === "text" && previousVNode.type === "element") {
+    return replaceElementWithText(vNode, previousVNode);
   }
 
   return [];
@@ -28,31 +36,80 @@ function updateElement(
   previousVNode: VElement<Node>,
 ): ChangeSet<unknown>[] {
   const changes: ChangeSet<unknown>[] = [];
+  let skipPrevious = false;
 
-  const nodeRef = <Node> previousVNode.nodeRef;
+  vNode.nodeRef = <Node> previousVNode.nodeRef;
 
-  if (vNode.tag === previousVNode.tag) {
-    vNode.nodeRef = nodeRef;
-
-    // Update event listener
-    changes.push(
-      ...updateEvents(vNode, previousVNode),
-    );
-
-    // Update attributes
-    changes.push(
-      ...compareAttributes(vNode, previousVNode),
-    );
-
-    // Update children
-    changes.push(
-      ...updateChildren({
+  // Tag did change
+  if (vNode.tag !== (<VElement<Node>> previousVNode).tag) {
+    changes.push({
+      type: "element",
+      action: "replace",
+      payload: {
         vNode,
-        previousVNode,
-      }),
-    );
-    return changes;
+      },
+    });
+    skipPrevious = true;
   }
+
+  // Update event listener
+  changes.push(
+    ...updateEvents(vNode, previousVNode),
+  );
+
+  // Update attributes
+  changes.push(
+    ...compareAttributes(vNode, previousVNode),
+  );
+
+  // Update children
+  changes.push(
+    ...updateChildren({
+      vNode,
+      previousVNode: skipPrevious ? undefined : previousVNode,
+    }),
+  );
+
+  return changes;
+}
+
+function replaceTextWithElement(
+  vNode: VElement<Node>,
+  previousVNode: VText<Node>,
+) {
+  const changes: ChangeSet<unknown>[] = [];
+
+  vNode.nodeRef = previousVNode.nodeRef;
+
+  changes.push({
+    type: "element",
+    action: "replace",
+    payload: {
+      vNode,
+    },
+  });
+
+  // Add events
+  changes.push(
+    ...updateEvents(vNode),
+  );
+
+  // Add attributes
+  for (const prop in vNode.props) {
+    changes.push({
+      type: "attribute",
+      action: "create",
+      payload: {
+        vNode,
+        name: prop,
+        value: <string> vNode.props[prop],
+      },
+    });
+  }
+
+  vNode.children?.forEach((child) => {
+    changes.push(...diff({ parentVNode: vNode, vNode: child }));
+  });
 
   return changes;
 }
@@ -68,6 +125,20 @@ function updateText(
     }
   }
   return [];
+}
+
+function replaceElementWithText(
+  vNode: VText<Node>,
+  previousVNode: VElement<Node>,
+): ChangeSet<unknown>[] {
+  vNode.nodeRef = previousVNode.nodeRef;
+  return [{
+    type: "text",
+    action: "replace",
+    payload: {
+      vNode,
+    },
+  }];
 }
 
 export function updateEvents(
