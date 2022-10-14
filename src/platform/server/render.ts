@@ -73,7 +73,7 @@ function stringFrom(attributes: JSX.IntrinsicElements): string {
     if (typeof attribute === "string") {
       attributesString += ` ${key}="${escapeHtml(attribute)}"`;
     }
-    if (typeof attribute === "boolean") {
+    if (attribute === true) {
       attributesString += ` ${key}`;
     }
   }
