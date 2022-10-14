@@ -4,13 +4,13 @@ import { ChangeSet } from "./mod.ts";
 export interface CreateAttributePayload {
   vNode: VElement<Node>;
   name: string;
-  value: string;
+  value: string | boolean;
 }
 
 export interface UpdateAttributePayload {
   vNode: VElement<Node>;
   name: string;
-  value: string;
+  value: string | boolean;
 }
 
 export interface DeleteAttributePayload {
@@ -34,16 +34,24 @@ export function attribute(change: AttributeChangeSet) {
   }
 }
 
-function createOrUpdate(payload: CreateAttributePayload) {
-  (<HTMLElement> payload.vNode.nodeRef).setAttribute(
-    payload.name,
-    payload.value,
+function createOrUpdate({ vNode, name, value }: CreateAttributePayload) {
+  if (
+    name === "checked" && typeof value === "boolean"
+  ) {
+    (<HTMLFormElement> vNode.nodeRef)[name] = value;
+  }
+  (<HTMLElement> vNode.nodeRef).setAttribute(
+    name,
+    `${value}`,
   );
 }
 
-function remove(payload: DeleteAttributePayload) {
-  (<HTMLElement> (<VNodeRef<Node>> payload.vNode).nodeRef).removeAttribute(
-    payload.name,
+function remove({ name, vNode }: DeleteAttributePayload) {
+  if (name === "checked") {
+    (<HTMLFormElement> vNode.nodeRef)[name] = false;
+  }
+  (<HTMLElement> (<VNodeRef<Node>> vNode).nodeRef).removeAttribute(
+    name,
   );
 }
 
@@ -108,7 +116,7 @@ export function setAttribute(
       payload: {
         vNode,
         name: key,
-        value: `${value}`,
+        value,
       },
     }];
   }
