@@ -5,6 +5,11 @@ export interface Island {
   path: string;
 }
 
+/**
+ * Find islands in vNode
+ * @param {VNode} vNode - The vnode to find the islands in it
+ * @param {Island[]} islands - The islands to find in the vnode
+ */
 export function findIslands(
   vNode: VNode<unknown>,
   islands: Record<string, JSX.Component>,
