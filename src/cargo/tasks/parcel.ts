@@ -10,13 +10,20 @@ interface TaskConfig {
   cssIntegration?: Integration;
 }
 
-interface AutoloadPagesProps {
+interface ParcelProps {
   pages: Record<string, Page>;
   islands?: Record<string, JSX.Component>;
   config?: TaskConfig;
 }
 
-export function autoloadPages(props: AutoloadPagesProps) {
+/**
+ * @deprecated
+ * Use the function "Parcel" instead
+ * Will be remove in version 1.x
+ */
+export const autoloadPages = Parcel;
+
+export function Parcel(props: ParcelProps) {
   return async (app: any) => {
     // Register bundle routes
     if (props.islands && Object.keys(props.islands).length) {
@@ -47,7 +54,6 @@ export function autoloadPages(props: AutoloadPagesProps) {
           return new Response(
             page({
               component,
-              cssIntegration: props.config?.cssIntegration,
               islands: props.islands,
             }),
             {
@@ -62,6 +68,11 @@ export function autoloadPages(props: AutoloadPagesProps) {
   };
 }
 
+/**
+ * @deprecated
+ * Use the task provided by Cargo Core for autoloading favicon
+ * Will be remove in version 1.x
+ */
 export function autoloadFavicon(path: string) {
   return (app: any) => {
     app.getProtocol("http")?.router.add({
