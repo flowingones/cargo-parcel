@@ -46,7 +46,7 @@ async function write(path: string, pages: Page[]) {
     
 ${imports(pages)}
 
-export const pages = {
+export default {
   ${exports(path, pages)}
 }`;
 
