@@ -1,20 +1,14 @@
 import { AST, parse, tag, VComponent, vNodeToString } from "./deps.ts";
 import { htmlAttributes } from "./html.ts";
-import { getHead, Head, head } from "./head.ts";
+import { getHead, Head } from "./head.ts";
 import { bodyAttributes } from "./body.ts";
 import { Footer, footer, getFooter } from "./footer.ts";
 import { findIslands, type Island } from "./islands.ts";
 
 export const cleanup: Array<() => void> = [];
 
-export interface Integration {
-  getStyles(...args: any[]): string;
-  getConfig(): any;
-}
-
 interface PageProps {
   component: JSX.Component;
-  cssIntegration?: Integration;
   islands?: Record<string, JSX.Component>;
 }
 
@@ -47,10 +41,6 @@ launch([${
         }).join()
       }]);</script>`],
     });
-  }
-
-  if (props.cssIntegration) {
-    head({ link: [props.cssIntegration?.getStyles()] });
   }
 
   return html({
