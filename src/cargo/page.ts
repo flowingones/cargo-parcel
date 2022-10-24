@@ -1,25 +1,21 @@
 import { AST, parse, tag, VComponent, vNodeToString } from "./deps.ts";
 import { htmlAttributes } from "./html.ts";
-import { getHead, Head, head } from "./head.ts";
+import { getHead, Head } from "./head.ts";
 import { bodyAttributes } from "./body.ts";
 import { Footer, footer, getFooter } from "./footer.ts";
 import { findIslands, type Island } from "./islands.ts";
 
 export const cleanup: Array<() => void> = [];
 
-export interface Integration {
-  getStyles(...args: any[]): string;
-  getConfig(): any;
-}
-
 interface PageProps {
   component: JSX.Component;
-  cssIntegration?: Integration;
   islands?: Record<string, JSX.Component>;
+  scripts?: string[];
 }
 
 export function page(props: PageProps) {
   let islands: Island[] = [];
+  const scripts = props.scripts || [];
 
   const vNode = <VComponent<unknown>> AST.create(
     tag(props.component, null, []),
@@ -31,26 +27,25 @@ export function page(props: PageProps) {
 
   if (islands.length) {
     footer({
-      script: [`<script type="module">import { launch } from "/main.js";
+      script: [
+        ...scripts,
+        `<script type="module">import { launch } from "/main.js";
 ${
-        islands.map((island) =>
-          `import ${
-            parse(island.path).name.replaceAll("-", "")
-          } from "/island-${parse(island.path).name}.js";\n`
-        ).join("")
-      }
+          islands.map((island) =>
+            `import ${
+              parse(island.path).name.replaceAll("-", "")
+            } from "/island-${parse(island.path).name}.js";\n`
+          ).join("")
+        }
 launch([${
-        islands.map((island) => {
-          return `{ class: "${island.class}", node: ${
-            parse(island.path).name.replaceAll("-", "")
-          }}`;
-        }).join()
-      }]);</script>`],
+          islands.map((island) => {
+            return `{ class: "${island.class}", node: ${
+              parse(island.path).name.replaceAll("-", "")
+            }}`;
+          }).join()
+        }]);</script>`,
+      ],
     });
-  }
-
-  if (props.cssIntegration) {
-    head({ link: [props.cssIntegration?.getStyles()] });
   }
 
   return html({
