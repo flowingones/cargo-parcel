@@ -1,7 +1,9 @@
 import { denoPlugin, esbuild, parse } from "./deps.ts";
+import { Plugin } from "./tasks/parcel.ts";
 
 interface BundleProps {
   islands: Record<string, JSX.Component>;
+  plugins?: Plugin[];
 }
 
 let esbuildInit = false;
@@ -13,6 +15,15 @@ export async function bundle(props: BundleProps) {
 
   for (const island in props.islands) {
     entryPoints[`island-${parse(island).name}`] = `./${island}`;
+  }
+
+  // TODO: Optimise for performance
+  if (Array.isArray(props.plugins)) {
+    for (const key in props.plugins) {
+      props.plugins[key].entryPoints?.forEach((plugin) => {
+        Object.keys(plugin).forEach((key) => entryPoints[key] = plugin[key]);
+      });
+    }
   }
 
   if (Deno.run === undefined && !esbuildInit) {

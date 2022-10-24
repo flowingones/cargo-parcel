@@ -1,19 +1,23 @@
 import { bundle } from "../bundle.ts";
 import { parse } from "../deps.ts";
-import { type Integration, mappedPath, page } from "../mod.ts";
+import { mappedPath, page } from "../mod.ts";
 
 export interface Page {
   default: JSX.Component;
 }
 
-interface TaskConfig {
-  cssIntegration?: Integration;
+export interface Plugin {
+  name: string;
+  entryPoints: Record<string, string>[];
+  plugin(): {
+    scripts: string[];
+  };
 }
 
 interface ParcelProps {
   pages: Record<string, Page>;
   islands?: Record<string, JSX.Component>;
-  config?: TaskConfig;
+  plugins?: Plugin[];
 }
 
 /**
@@ -24,13 +28,20 @@ interface ParcelProps {
 export const autoloadPages = Parcel;
 
 export function Parcel(props: ParcelProps) {
+  const scripts: string[] = [];
+
+  props.plugins?.forEach((plugin) => scripts.push(...plugin.plugin().scripts));
+
   return async (app: any) => {
+    const router: any = app.getProtocol("http")?.router;
+
     // Register bundle routes
     if (props.islands && Object.keys(props.islands).length) {
       (await bundle({
         islands: props.islands,
+        plugins: props.plugins,
       }))?.forEach((file) => {
-        app.getProtocol("http")?.router.add({
+        router.add({
           path: `/${parse(file.path).name.replaceAll("$", "")}.js`,
           method: "GET",
           handler: () => {
@@ -47,7 +58,7 @@ export function Parcel(props: ParcelProps) {
     for (const route in props.pages) {
       const component: JSX.Component = props.pages[route].default;
 
-      app.getProtocol("http")?.router.add({
+      router.add({
         path: mappedPath(route),
         method: "GET",
         handler: () => {
@@ -55,6 +66,7 @@ export function Parcel(props: ParcelProps) {
             page({
               component,
               islands: props.islands,
+              scripts,
             }),
             {
               headers: {

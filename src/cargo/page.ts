@@ -10,10 +10,12 @@ export const cleanup: Array<() => void> = [];
 interface PageProps {
   component: JSX.Component;
   islands?: Record<string, JSX.Component>;
+  scripts?: string[];
 }
 
 export function page(props: PageProps) {
   let islands: Island[] = [];
+  const scripts = props.scripts || [];
 
   const vNode = <VComponent<unknown>> AST.create(
     tag(props.component, null, []),
@@ -25,21 +27,24 @@ export function page(props: PageProps) {
 
   if (islands.length) {
     footer({
-      script: [`<script type="module">import { launch } from "/main.js";
+      script: [
+        ...scripts,
+        `<script type="module">import { launch } from "/main.js";
 ${
-        islands.map((island) =>
-          `import ${
-            parse(island.path).name.replaceAll("-", "")
-          } from "/island-${parse(island.path).name}.js";\n`
-        ).join("")
-      }
+          islands.map((island) =>
+            `import ${
+              parse(island.path).name.replaceAll("-", "")
+            } from "/island-${parse(island.path).name}.js";\n`
+          ).join("")
+        }
 launch([${
-        islands.map((island) => {
-          return `{ class: "${island.class}", node: ${
-            parse(island.path).name.replaceAll("-", "")
-          }}`;
-        }).join()
-      }]);</script>`],
+          islands.map((island) => {
+            return `{ class: "${island.class}", node: ${
+              parse(island.path).name.replaceAll("-", "")
+            }}`;
+          }).join()
+        }]);</script>`,
+      ],
     });
   }
 
