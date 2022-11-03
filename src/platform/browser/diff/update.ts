@@ -9,14 +9,14 @@ import {
 } from "./mod.ts";
 
 export function update(
-  vNode: VElement<Node> | VText<Node>,
-  previousVNode: VElement<Node> | VText<Node>,
+  vNode?: VElement<Node> | VText<Node>,
+  previousVNode?: VElement<Node> | VText<Node>,
 ): ChangeSet<unknown>[] {
   if (vNode?.type === "element" && previousVNode?.type === "element") {
     return updateElement(vNode, previousVNode);
   }
 
-  if (vNode?.type === "element" && previousVNode.type === "text") {
+  if (vNode?.type === "element" && previousVNode?.type === "text") {
     return replaceTextWithElement(vNode, previousVNode);
   }
 
@@ -24,7 +24,7 @@ export function update(
     return updateText(vNode, previousVNode);
   }
 
-  if (vNode?.type === "text" && previousVNode.type === "element") {
+  if (vNode?.type === "text" && previousVNode?.type === "element") {
     return replaceElementWithText(vNode, previousVNode);
   }
 
@@ -196,13 +196,24 @@ export function updateChildren(
   props: UpdateChildrenProps,
 ): ChangeSet<unknown>[] {
   const changes: ChangeSet<unknown>[] = [];
+  let previousChildren: VNode<Node>[] = [];
+  if (props.previousVNode && Array.isArray(props.previousVNode.children)) {
+    previousChildren = [...props.previousVNode.children];
+  }
   props.vNode?.children?.forEach((child, index) => {
     changes.push(...diff({
       parentVNode: props.vNode,
       vNode: child,
-      previousVNode: props.previousVNode?.children?.at(index),
+      previousVNode: previousChildren?.shift(),
     }));
   });
+
+  previousChildren?.forEach((previousChild) => {
+    changes.push(
+      ...diff({ parentVNode: props.vNode, previousVNode: previousChild }),
+    );
+  });
+
   return changes;
 }
 
