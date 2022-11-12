@@ -11,64 +11,70 @@ import {
 } from "./mod.ts";
 
 interface DiffProps<T> {
+  parentVNode?: VNode<T>;
   vNode?: VNode<T>;
   previousVNode?: VNode<T>;
   node?: T;
-  parentVNode?: VNode<T>;
 }
 
 export function diff(
   props: DiffProps<Node>,
 ): ChangeSet<unknown>[] {
-  if (toBeHydrated(props.node, props.vNode, props.previousVNode)) {
+  let { vNode, previousVNode, parentVNode, node } = props;
+
+  parentVNode = skipVComponents(parentVNode);
+  vNode = skipVComponents(vNode);
+  previousVNode = skipVComponents(previousVNode);
+
+  if (toBeHydrated(node, vNode, previousVNode)) {
     return hydrate({
-      node: <Node> props.node,
-      vNode: skipVComponents(props.vNode),
+      node: <Node> node,
+      vNode,
     });
   }
 
-  if (toBeUpdated(props.vNode, props.previousVNode)) {
+  if (toBeUpdated(vNode, previousVNode)) {
     return update(
-      skipVComponents(props.vNode),
-      skipVComponents(props.previousVNode),
+      vNode,
+      previousVNode,
     );
   }
 
   if (
     toBeRendered({
-      parentVNode: skipVComponents(props.parentVNode),
-      vNode: skipVComponents(props.vNode),
+      parentVNode,
+      vNode,
     })
   ) {
     return render({
-      parentVNode: skipVComponents(props.parentVNode),
-      vNode: skipVComponents(props.vNode),
+      parentVNode,
+      vNode,
     });
   }
 
   if (
     toBeDeleted({
-      parentVNode: skipVComponents(props.parentVNode),
-      vNode: skipVComponents(props.vNode),
-      previousVNode: skipVComponents(props.previousVNode),
+      parentVNode,
+      vNode,
+      previousVNode,
     })
   ) {
-    if (props.previousVNode?.type === "text") {
+    if (previousVNode?.type === "text") {
       return [{
         type: "text",
         action: "delete",
         payload: {
-          vNode: props.previousVNode,
+          vNode: previousVNode,
         },
       }];
     }
-    if (props.previousVNode?.type === "element") {
+    if (previousVNode?.type === "element") {
       return [{
         type: "element",
         action: "delete",
         payload: {
-          parentVNode: props.parentVNode,
-          vNode: props.vNode,
+          parentVNode,
+          vNode: previousVNode,
         },
       }];
     }
