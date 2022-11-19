@@ -1,17 +1,10 @@
 import { bundle } from "../bundle.ts";
 import { parse } from "../deps.ts";
 import { mappedPath, page } from "../mod.ts";
+import { Plugin, plugins } from "../plugin.ts";
 
 export interface Page {
   default: JSX.Component;
-}
-
-export interface Plugin {
-  name: string;
-  entryPoints: Record<string, string>[];
-  plugin(): {
-    scripts: string[];
-  };
 }
 
 interface ParcelProps {
@@ -27,19 +20,41 @@ interface ParcelProps {
  */
 export const autoloadPages = Parcel;
 
-export function Parcel(props: ParcelProps) {
-  const scripts: string[] = [];
+export async function Parcel(props: ParcelProps) {
+  const entryPoints: Record<string, string> = {};
 
-  props.plugins?.forEach((plugin) => scripts.push(...plugin.plugin().scripts));
+  /*
+   * Islands
+   */
+  if (props.islands) {
+    entryPoints["main"] =
+      new URL("../../platform/browser/launch.ts", import.meta.url).href;
+
+    for (const island in props.islands) {
+      entryPoints[`island-${parse(island).name}`] = `./${island}`;
+    }
+  }
+
+  /*
+   * Plugins
+   */
+  const { scripts, entryPoints: pluginEntryPoints } = await plugins(
+    props.plugins,
+  );
+
+  if (pluginEntryPoints) {
+    for (const key in pluginEntryPoints) {
+      entryPoints[key] = pluginEntryPoints[key];
+    }
+  }
 
   return async (app: any) => {
     const router: any = app.getProtocol("http")?.router;
 
     // Register bundle routes
-    if (props.islands && Object.keys(props.islands).length) {
+    if (Object.keys(entryPoints).length) {
       (await bundle({
-        islands: props.islands,
-        plugins: props.plugins,
+        entryPoints: entryPoints,
       }))?.forEach((file) => {
         router.add({
           path: `/${parse(file.path).name.replaceAll("$", "")}.js`,

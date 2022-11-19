@@ -13,9 +13,9 @@ export {
   type VElement,
   type VNode,
 } from "../mod.ts";
-import * as esbuildNative from "https://deno.land/x/esbuild@v0.15.6/mod.js";
-import * as esbuildWasm from "https://deno.land/x/esbuild@v0.15.6/wasm.js";
-export { denoPlugin } from "https://deno.land/x/esbuild_deno_loader@0.5.2/mod.ts";
+import * as esbuildNative from "https://deno.land/x/esbuild@v0.15.14/mod.js";
+import * as esbuildWasm from "https://deno.land/x/esbuild@v0.15.14/wasm.js";
+export { denoPlugin } from "https://deno.land/x/esbuild_deno_loader@0.6.0/mod.ts";
 
 const esbuild = Deno.run === undefined ? esbuildWasm : esbuildNative;
 
