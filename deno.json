@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
     "jsxFactory": "tag"
-  }
+  },
+  "importMap": "./.dev/import_map.json"
 }

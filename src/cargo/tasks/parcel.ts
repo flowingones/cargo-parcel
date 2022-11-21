@@ -38,7 +38,7 @@ export async function Parcel(props: ParcelProps) {
   /*
    * Plugins
    */
-  const { scripts, entryPoints: pluginEntryPoints } = await plugins(
+  const { scripts, entryPoints: pluginEntryPoints, tasks } = await plugins(
     props.plugins,
   );
 
@@ -76,13 +76,21 @@ export async function Parcel(props: ParcelProps) {
       router.add({
         path: mappedPath(route),
         method: "GET",
-        handler: () => {
+        handler: async () => {
+          let renderedPage = page({
+            component,
+            islands: props.islands,
+            scripts,
+          });
+
+          if (tasks?.afterRender?.length) {
+            for (const task of tasks.afterRender) {
+              renderedPage = await task({ pageHtml: renderedPage });
+            }
+          }
+
           return new Response(
-            page({
-              component,
-              islands: props.islands,
-              scripts,
-            }),
+            renderedPage,
             {
               headers: {
                 "content-type": "text/html",
