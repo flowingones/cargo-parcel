@@ -1,3 +1,5 @@
+import { log } from "cargo/utils/mod.ts";
+
 interface AfterRenderTaskContext {
   pageHtml: string;
 }
@@ -26,6 +28,7 @@ export async function plugins(plugins?: Plugin[]): Promise<PluginDefintions> {
 
   if (plugins?.length) {
     for (const plugin of plugins) {
+      log("Plugin", `${plugin.name} loaded!`);
       const pluginDefinition = await plugin.plugin();
       if (pluginDefinition.scripts) {
         scripts.push(...pluginDefinition.scripts);
