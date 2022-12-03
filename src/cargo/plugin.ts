@@ -4,7 +4,7 @@ interface AfterRenderTaskContext {
   pageHtml: string;
 }
 
-type AfterRenderTask = (
+export type AfterRenderTask = (
   ctx: AfterRenderTaskContext,
 ) => Promise<string> | string;
 
