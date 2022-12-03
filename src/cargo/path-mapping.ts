@@ -13,6 +13,9 @@ const pathMappings = new Map<string, PathMapping>([
  *
  */
 export function mappedPath(path: string): string {
+  /*
+   *
+   */
   const parsedPath = parse(path);
   const mappedPath = pathMappings.get(`/${parsedPath.name}`);
   if (mappedPath) {
@@ -22,5 +25,10 @@ export function mappedPath(path: string): string {
         : mappedPath.path
     }`;
   }
-  return path;
+
+  /*
+   * Prepare dynamic path segments for URLPattern
+   * https://developer.mozilla.org/en-US/docs/Web/API/URLPattern
+   */
+  return path.replace(/(\[(.+?)\])/, ":$2");
 }

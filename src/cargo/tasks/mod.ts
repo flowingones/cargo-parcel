@@ -1,1 +1,1 @@
-export { autoloadFavicon, autoloadPages, Parcel } from "./parcel.ts";
+export { Parcel } from "./parcel.ts";

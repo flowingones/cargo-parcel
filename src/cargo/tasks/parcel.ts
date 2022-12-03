@@ -13,13 +13,6 @@ interface ParcelProps {
   plugins?: Plugin[];
 }
 
-/**
- * @deprecated
- * Use the function "Parcel" instead
- * Will be remove in version 1.x
- */
-export const autoloadPages = Parcel;
-
 export async function Parcel(props: ParcelProps) {
   const entryPoints: Record<string, string> = {};
 
@@ -76,11 +69,12 @@ export async function Parcel(props: ParcelProps) {
       router.add({
         path: mappedPath(route),
         method: "GET",
-        handler: async () => {
+        handler: async (ctx: any) => {
           let renderedPage = page({
             component,
             islands: props.islands,
             scripts,
+            params: ctx.params,
           });
 
           if (tasks?.afterRender?.length) {
@@ -100,37 +94,5 @@ export async function Parcel(props: ParcelProps) {
         },
       });
     }
-  };
-}
-
-/**
- * @deprecated
- * Use the task provided by Cargo Core for autoloading favicon
- * Will be remove in version 1.x
- */
-export function autoloadFavicon(path: string) {
-  return (app: any) => {
-    app.getProtocol("http")?.router.add({
-      path: "/favicon.ico",
-      method: "GET",
-      handler: async () => {
-        try {
-          const file = await Deno.open(path);
-          return new Response(
-            file.readable,
-            {
-              headers: {
-                "content-type": "image/vnd.microsoft.icon",
-              },
-            },
-          );
-        } catch (e) {
-          if (e instanceof Deno.errors.NotFound) {
-            throw new Error("Not able to load favicon");
-          }
-          throw e;
-        }
-      },
-    });
   };
 }

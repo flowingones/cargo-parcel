@@ -11,6 +11,7 @@ interface PageProps {
   component: JSX.Component;
   islands?: Record<string, JSX.Component>;
   scripts?: string[];
+  params?: Record<string, string>;
 }
 
 export function page(props: PageProps) {
@@ -18,7 +19,7 @@ export function page(props: PageProps) {
   const scripts = props.scripts || [];
 
   const vNode = <VComponent<unknown>> AST.create(
-    tag(props.component, null, []),
+    tag(props.component, { params: props.params }, []),
   );
 
   if (props.islands) {
