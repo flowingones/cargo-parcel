@@ -1,6 +1,6 @@
 import { log } from "cargo/utils/mod.ts";
 
-interface AfterRenderTaskContext {
+export interface AfterRenderTaskContext {
   pageHtml: string;
 }
 
