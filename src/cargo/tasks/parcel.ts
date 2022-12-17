@@ -1,6 +1,6 @@
 import { bundle } from "../bundle.ts";
 import { parse } from "../deps.ts";
-import { mappedPath, page } from "../mod.ts";
+import { mappedPath, pageFrom } from "../mod.ts";
 import { Plugin, plugins } from "../plugin.ts";
 
 export interface Page {
@@ -70,7 +70,7 @@ export async function Parcel(props: ParcelProps) {
         path: mappedPath(route),
         method: "GET",
         handler: async (ctx: any) => {
-          let renderedPage = page({
+          let renderedPage = pageFrom({
             component,
             islands: props.islands,
             scripts,
