@@ -17,4 +17,9 @@ Deno.test("Handle path mapping", async (t) => {
     assertEquals(mappedPath("/dir/file"), "/dir/file");
     assertEquals(mappedPath("/dir/dir/file"), "/dir/dir/file");
   });
+  await t.step("Map: dynamic parts", () => {
+    assertEquals(mappedPath("/[file]"), "/:file");
+    assertEquals(mappedPath("/[dir]/[file]"), "/:dir/:file");
+    assertEquals(mappedPath("/[dir]/[dir]/[file]"), "/:dir/:dir/:file");
+  });
 });
