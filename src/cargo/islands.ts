@@ -3,6 +3,7 @@ import { parse, VComponent, VElement, VNode } from "./deps.ts";
 export interface Island {
   class: string;
   path: string;
+  props: Record<string, unknown>;
 }
 
 /**
@@ -48,6 +49,7 @@ function isIsland(
       return {
         class: `_box_${crypto.randomUUID().slice(-6)}`,
         path: parse(key).name.replaceAll("$", ""),
+        props: vComponent.props,
       };
     }
   }
