@@ -30,5 +30,5 @@ export function mappedPath(path: string): string {
    * Prepare dynamic path segments for URLPattern
    * https://developer.mozilla.org/en-US/docs/Web/API/URLPattern
    */
-  return path.replace(/(\[(.+?)\])/, ":$2");
+  return path.replace(/(\[(.+?)\])/g, ":$2");
 }
