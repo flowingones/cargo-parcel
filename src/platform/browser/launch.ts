@@ -16,6 +16,7 @@ import {
 interface Island {
   class: string;
   node: JSX.Component;
+  props: Record<string, unknown>;
 }
 
 function sync(node: Node, vNode: VNode<Node>) {
@@ -36,11 +37,11 @@ export function launch(islands: Island[]) {
     const node = document.querySelector(`.${island.class}`);
     if (node) {
       const vNode = <VComponent<Node>> AST.create<Node>(
-        tag(island.node, null, []),
+        tag(island.node, island.props, []),
       );
       typeof (<VElement<Node>> vNode.ast).props.class === "string"
         ? (<VElement<Node>> vNode.ast).props.class = `${
-          (<VElement<Node>> vNode.ast).props.class
+          (<VElement<Node>> vNode.ast).props.classy
         } ${island.class}`
         : (<VElement<Node>> vNode.ast).props.class = island.class;
       sync(node, vNode);

@@ -7,14 +7,14 @@ import { findIslands, type Island } from "./islands.ts";
 
 export const cleanup: Array<() => void> = [];
 
-interface PageProps {
+interface PageFromProps {
   component: JSX.Component;
   islands?: Record<string, JSX.Component>;
   scripts?: string[];
   params?: Record<string, string>;
 }
 
-export function page(props: PageProps) {
+export function pageFrom(props: PageFromProps) {
   let islands: Island[] = [];
   const scripts = props.scripts || [];
 
@@ -42,14 +42,14 @@ launch([${
           islands.map((island) => {
             return `{ class: "${island.class}", node: ${
               parse(island.path).name.replaceAll("-", "")
-            }}`;
+            }, ${island.props ? `props: ${JSON.stringify(island.props)}` : ""}`;
           }).join()
         }]);</script>`,
       ],
     });
   }
 
-  return html({
+  return htmlFrom({
     body: vNodeToString(vNode),
     head: getHead(),
     htmlAttributes: htmlAttributes(),
@@ -58,7 +58,7 @@ launch([${
   });
 }
 
-interface HtmlProps {
+interface HtmlFromProps {
   body: string;
   head?: Head;
   htmlAttributes?: string[];
@@ -66,7 +66,7 @@ interface HtmlProps {
   footer?: Footer;
 }
 
-function html(props: HtmlProps) {
+function htmlFrom(props: HtmlFromProps) {
   return `<!DOCTYPE html><html ${props.htmlAttributes?.join(" ")}><head>${
     props.head?.base || ""
   }<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${
