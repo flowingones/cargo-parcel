@@ -8,9 +8,10 @@ runtimes and platforms as well.
 ## Features:
 
 - Based on `TSX` components
-- Server-side rendering first.
+- Server-side rendering first
 - Reactive state in the frontend
-- Small bundle size in the frontend (3.5kb).
+- Ships zero javascript to the browser by default
+- Small bundle size in the frontend (3.5kb)
 
 ## On the roadmap (Not implemented yet)
 
