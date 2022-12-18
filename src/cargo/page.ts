@@ -42,7 +42,7 @@ launch([${
           islands.map((island) => {
             return `{ class: "${island.class}", node: ${
               parse(island.path).name.replaceAll("-", "")
-            }, ${island.props ? `props: ${JSON.stringify(island.props)}` : ""}`;
+            }, props: ${JSON.stringify(island.props)} }`;
           }).join()
         }]);</script>`,
       ],
