@@ -1,4 +1,4 @@
-import { VElement, VNode, VText } from "./deps.ts";
+import { VElement, VNode, VText, VType } from "./deps.ts";
 import { ChangeSet, diff, TextChangeSet } from "./mod.ts";
 
 interface RenderProps {
@@ -13,18 +13,18 @@ export function render(
     return [];
   }
 
-  if (props.vNode.type === "component") {
+  if (props.vNode.type === VType.COMPONENT) {
     return render({
       parentVNode: props.parentVNode,
       vNode: props.vNode?.ast,
     });
   }
 
-  if (props.vNode.type === "element") {
+  if (props.vNode.type === VType.ELEMENT) {
     return renderElement(props.parentVNode, props.vNode);
   }
 
-  if (props.vNode.type === "text") {
+  if (props.vNode.type === VType.TEXT) {
     return renderText(props.parentVNode, props.vNode);
   }
 

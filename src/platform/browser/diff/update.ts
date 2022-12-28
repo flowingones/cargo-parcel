@@ -1,4 +1,4 @@
-import { VElement, VNode, VText } from "./deps.ts";
+import { VElement, VNode, VText, VType } from "./deps.ts";
 
 import {
   ChangeSet,
@@ -12,19 +12,19 @@ export function update(
   vNode?: VElement<Node> | VText<Node>,
   previousVNode?: VElement<Node> | VText<Node>,
 ): ChangeSet<unknown>[] {
-  if (vNode?.type === "element" && previousVNode?.type === "element") {
+  if (vNode?.type === VType.ELEMENT && previousVNode?.type === VType.ELEMENT) {
     return updateElement(vNode, previousVNode);
   }
 
-  if (vNode?.type === "element" && previousVNode?.type === "text") {
+  if (vNode?.type === VType.ELEMENT && previousVNode?.type === VType.TEXT) {
     return replaceTextWithElement(vNode, previousVNode);
   }
 
-  if (vNode?.type === "text" && previousVNode?.type === "text") {
+  if (vNode?.type === VType.TEXT && previousVNode?.type === VType.TEXT) {
     return updateText(vNode, previousVNode);
   }
 
-  if (vNode?.type === "text" && previousVNode?.type === "element") {
+  if (vNode?.type === VType.TEXT && previousVNode?.type === VType.ELEMENT) {
     return replaceElementWithText(vNode, previousVNode);
   }
 

@@ -1,4 +1,4 @@
-import type { VElement, VNode, VText } from "./deps.ts";
+import { VElement, VNode, VText, VType } from "./deps.ts";
 
 import {
   type ChangeSet,
@@ -59,7 +59,7 @@ export function diff(
       previousVNode,
     })
   ) {
-    if (previousVNode?.type === "text") {
+    if (previousVNode?.type === VType.TEXT) {
       return [{
         type: "text",
         action: "delete",
@@ -68,7 +68,7 @@ export function diff(
         },
       }];
     }
-    if (previousVNode?.type === "element") {
+    if (previousVNode?.type === VType.ELEMENT) {
       return [{
         type: "element",
         action: "delete",
@@ -97,7 +97,7 @@ function toBeDeleted(
 function skipVComponents<T>(
   vNode: VNode<T>,
 ): VElement<T> | VText<T> | undefined {
-  if (vNode?.type === "component") {
+  if (vNode?.type === VType.COMPONENT) {
     return skipVComponents(vNode.ast);
   }
   return vNode || undefined;
