@@ -261,4 +261,11 @@ Deno.test("JSX: Component", async (t) => {
       },
     );
   });
+
+  await t.step("should remove undefined children", () => {
+    assertEquals(
+      tag("div", null, ["hello", undefined, " world"]).children[0],
+      "hello world",
+    );
+  });
 });
