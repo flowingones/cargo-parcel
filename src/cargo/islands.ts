@@ -1,4 +1,4 @@
-import { parse, VComponent, VElement, VNode } from "./deps.ts";
+import { parse, VComponent, VElement, VNode, VType } from "./deps.ts";
 
 export interface Island {
   class: string;
@@ -16,16 +16,16 @@ export function findIslands(
   islands: Record<string, JSX.Component>,
 ): Island[] {
   const cache: Island[] = [];
-  if (vNode?.type === "text") return [];
+  if (vNode?.type === VType.TEXT) return [];
 
-  if (vNode?.type === "element") {
+  if (vNode?.type === VType.ELEMENT) {
     vNode.children?.forEach((child) => {
       cache.push(...findIslands(child, islands));
     });
     return cache;
   }
 
-  if (vNode?.type === "component") {
+  if (vNode?.type === VType.COMPONENT) {
     const island = isIsland(vNode, islands);
     if (island) {
       (typeof (<VElement<unknown>> vNode.ast).props.class === "string")

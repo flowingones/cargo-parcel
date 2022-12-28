@@ -1,9 +1,15 @@
 import "./types.ts";
 import { componentsCache } from "./registry.ts";
 
-export enum VComponentMode {
+export enum VMode {
   NotCreated,
   Created,
+}
+
+export enum VType {
+  TEXT,
+  ELEMENT,
+  COMPONENT,
 }
 
 export interface ElementProps<T> {
@@ -12,26 +18,26 @@ export interface ElementProps<T> {
 }
 
 export interface VNodeRef<T> {
-  type: "text" | "element";
+  type: VType.TEXT | VType.ELEMENT;
   nodeRef?: T;
   eventsRefs: JSX.EventRef[];
   children?: VNode<T>[];
 }
 
 export interface VElement<T> extends VNodeRef<T> {
-  type: "element";
+  type: VType.ELEMENT;
   tag: string;
   props: ElementProps<T>;
 }
 
 export interface VText<T> extends VNodeRef<T> {
-  type: "text";
+  type: VType.TEXT;
   text: string;
 }
 
 export interface VComponent<T> {
-  type: "component";
-  mode: VComponentMode;
+  type: VType.COMPONENT;
+  mode: VMode;
   id: symbol;
   fn: (props: JSX.ElementProps) => JSX.Element;
   props: JSX.ElementProps;
@@ -61,37 +67,29 @@ function create<T>(node: JSX.Node): VNode<T> {
   }
 }
 
+function update<T>(vNode: VNode<T>) {
+  if (!vNode) {
+    return;
+  }
+  if (vNode.type === VType.COMPONENT) {
+    return component(vNode);
+  }
+  throw Error(`VNode with type of "${vNode.type}" is not supported.`);
+}
+
 function text<T>(text: string): VText<T> {
   return {
-    type: "text",
+    type: VType.TEXT,
     text: `${text}`,
     eventsRefs: [],
   };
 }
 
-function element<T>(node: JSX.Element): VElement<T> {
+function element<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
   const { tag, children, eventRefs, props, ...rest } = node;
 
   return {
-    type: "element",
-    tag: <string> tag,
-    props: <ElementProps<T>> props,
-    eventsRefs: eventRefs,
-    children: children?.map((child) => {
-      if (typeof child === "number") {
-        child = `${child}`;
-      }
-      return create(child);
-    }),
-    ...rest,
-  };
-}
-
-function updateElement<T>(node: JSX.Element, vNode: VElement<T>): VElement<T> {
-  const { tag, children, eventRefs, props } = node;
-
-  return {
-    type: "element",
+    type: VType.ELEMENT,
     tag: <string> tag,
     props: <ElementProps<T>> props,
     eventsRefs: eventRefs,
@@ -99,8 +97,11 @@ function updateElement<T>(node: JSX.Element, vNode: VElement<T>): VElement<T> {
       if (typeof child === "number") {
         child = `${child}`;
       }
-      return track(child, vNode.children ? vNode.children[i] : undefined);
+      return vNode
+        ? track(child, vNode.children ? vNode.children[i] : undefined)
+        : create(child);
     }),
+    ...rest,
   };
 }
 
@@ -123,17 +124,17 @@ function createComponent<T>(node: JSX.Element) {
   props.children = children;
 
   const component: VComponent<T> = {
-    type: "component",
+    type: VType.COMPONENT,
     ast: undefined,
-    id: Symbol("Component"),
-    mode: VComponentMode.NotCreated,
+    id: Symbol("Parcel Component ID"),
+    mode: VMode.NotCreated,
     fn: tag,
     props,
   };
 
   componentsCache.toCreate.push(component);
   component.ast = create(component.fn(props));
-  component.mode = VComponentMode.Created;
+  component.mode = VMode.Created;
   componentsCache.toCreate.shift();
 
   return component;
@@ -168,14 +169,14 @@ function track<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
   }
 
   if (typeof node.tag === "string") {
-    if (vNode?.type === "element" && node.tag === vNode.tag) {
-      return updateElement(node, vNode);
+    if (vNode?.type === VType.ELEMENT && node.tag === vNode.tag) {
+      return element(node, vNode);
     }
     return element(node);
   }
 
   if (typeof node.tag === "function") {
-    if (vNode?.type === "component" && (vNode.fn === node.tag)) {
+    if (vNode?.type === VType.COMPONENT && vNode.fn === node.tag) {
       const { children, props } = node;
       props.children = children;
       vNode.props = props;
@@ -183,16 +184,6 @@ function track<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
     }
     return component(node);
   }
-}
-
-function update<T>(vNode: VNode<T>) {
-  if (!vNode) {
-    return;
-  }
-  if (vNode.type === "component") {
-    return component(vNode);
-  }
-  throw Error(`VNode with type of "${vNode.type}" is not supported.`);
 }
 
 export const AST = {

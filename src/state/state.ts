@@ -1,3 +1,4 @@
+import { VMode } from "../mod.ts";
 import { componentsCache, VComponent } from "./deps.ts";
 import { cycle } from "./mod.ts";
 
@@ -33,7 +34,7 @@ export function state<T>(value: T): State<T> {
   }
 
   // If VComponent is created and has state return VComponent state
-  if (vComponent.mode === 1 && vComponent.state?.length) {
+  if (vComponent.mode === VMode.Created && vComponent.state?.length) {
     stateCache.push(...<State<unknown>[]> vComponent.state);
     vComponent.state = [];
     const current: State<T> = returnState();
