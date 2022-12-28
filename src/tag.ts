@@ -42,28 +42,33 @@ function flatten(children: JSX.Node[] | JSX.Node[][]): JSX.Node[] {
 }
 
 function collectTextNodes(nodes?: JSX.Node[]): JSX.Node[] {
-  return nodes?.filter((node, index, source) => {
-    if (typeof node === "undefined" || node === null) return false;
+  return nodes
+    //Remove all undefined child nodes.
+    ?.filter((node) => typeof node !== "undefined")
+    .filter(
+      (node, index, source) => {
+        if (typeof node === "undefined" || node === null) return false;
 
-    if (
-      typeof (<JSX.Element> node).tag === "string" ||
-      typeof (<JSX.Element> node).tag === "function"
-    ) {
-      return true;
-    }
+        if (
+          typeof (<JSX.Element> node).tag === "string" ||
+          typeof (<JSX.Element> node).tag === "function"
+        ) {
+          return true;
+        }
 
-    if (typeof source[index + 1] === "undefined") {
-      return true;
-    }
+        if (typeof source[index + 1] === "undefined") {
+          return true;
+        }
 
-    if (
-      typeof source[index + 1] !== "string" &&
-      typeof source[index + 1] !== "number"
-    ) {
-      return true;
-    }
+        if (
+          typeof source[index + 1] !== "string" &&
+          typeof source[index + 1] !== "number"
+        ) {
+          return true;
+        }
 
-    source[index + 1] = `${node}${source[index + 1]}`;
-    return false;
-  }) || [];
+        source[index + 1] = `${node}${source[index + 1]}`;
+        return false;
+      },
+    ) || [];
 }
