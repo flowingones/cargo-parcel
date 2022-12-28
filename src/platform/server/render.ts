@@ -1,4 +1,4 @@
-import { AST, VComponent, VElement, VNode, VText } from "./deps.ts";
+import { AST, VComponent, VElement, VNode, VText, VType } from "./deps.ts";
 import "../../types.ts";
 
 import { escapeHtml } from "./utils.ts";
@@ -37,18 +37,18 @@ function stringify<T>(vNode: VNode<T>): string {
 
   // VNode is VText
   if (
-    vNode.type === "text"
+    vNode.type === VType.TEXT
   ) {
     return escapeHtml((<VText<T>> vNode).text.toString());
   }
 
   // VNode is VElement
-  if (vNode.type === "element") {
+  if (vNode.type === VType.ELEMENT) {
     return elementToString(<VElement<T>> vNode);
   }
 
   //VNode is VComponent
-  if (vNode.type === "component") {
+  if (vNode.type === VType.COMPONENT) {
     return stringify(<VComponent<T>> vNode.ast);
   }
 

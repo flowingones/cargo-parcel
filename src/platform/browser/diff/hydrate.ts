@@ -1,4 +1,4 @@
-import { VElement, VNode, VText } from "./deps.ts";
+import { VElement, VNode, VText, VType } from "./deps.ts";
 import { ChangeSet, diff, EventChangeSet, setAttribute } from "./mod.ts";
 
 interface HydrateProps {
@@ -12,10 +12,10 @@ interface HydrateProps {
 export function hydrate(
   props: HydrateProps,
 ): ChangeSet<unknown>[] {
-  if (props.vNode?.type === "element") {
+  if (props.vNode?.type === VType.ELEMENT) {
     return element(<HydrateElementProps> props);
   }
-  if (props.vNode?.type === "text") {
+  if (props.vNode?.type === VType.TEXT) {
     return text(props.node, props.vNode);
   }
   return [];
@@ -103,7 +103,9 @@ function collectTextNodes<T>(vNodes?: VNode<T>[]): VNode<T>[] | undefined {
   return vNodes?.filter((vNode, index, source) => {
     if (!vNode) return false;
 
-    if (vNode.type === "element" || vNode.type === "component") return true;
+    if (vNode.type === VType.ELEMENT || vNode.type === VType.COMPONENT) {
+      return true;
+    }
 
     const nextVNode = source[index + 1];
 
@@ -111,7 +113,7 @@ function collectTextNodes<T>(vNodes?: VNode<T>[]): VNode<T>[] | undefined {
       return true;
     }
 
-    if (nextVNode.type !== "text") {
+    if (nextVNode.type !== VType.TEXT) {
       return true;
     }
 

@@ -4,4 +4,5 @@ export {
   type VNode,
   type VNodeRef,
   type VText,
+  VType,
 } from "../../../mod.ts";

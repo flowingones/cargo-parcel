@@ -1,4 +1,4 @@
-import { type VElement } from "./deps.ts";
+import { type VElement, VType } from "./deps.ts";
 import type { ChangeSet } from "./mod.ts";
 
 export interface CreateElementPayload {
@@ -73,13 +73,13 @@ function create(payload: CreateElementPayload): void {
 }
 
 function attach(payload: AttachElementPayload): void {
-  if (payload.vNode.type === "element" && payload.vNode.nodeRef) {
+  if (payload.vNode.type === VType.ELEMENT && payload.vNode.nodeRef) {
     (<Node> payload.parentVNode.nodeRef)?.appendChild(payload.vNode.nodeRef);
   }
 }
 
 function replace(payload: ReplaceElementPayload): void {
-  if (payload.vNode.type === "element") {
+  if (payload.vNode.type === VType.ELEMENT) {
     const node = createElement(
       payload.vNode,
       <Node> (<Node> payload.vNode.nodeRef).parentNode,

@@ -4,9 +4,10 @@ export { componentsCache } from "./registry.ts";
 export {
   AST,
   type VComponent,
-  VComponentMode,
   type VElement,
+  VMode,
   type VNode,
   type VNodeRef,
   type VText,
+  VType,
 } from "./ast.ts";
