@@ -37,7 +37,7 @@ function renderElement(
 ): ChangeSet<unknown>[] {
   const changes: ChangeSet<unknown>[] = [];
 
-  // Create DOM node and link it to the vnode
+  // Create DOM node and link it to the vNode
   changes.push({
     type: "element",
     action: "create",
@@ -58,7 +58,7 @@ function renderElement(
   });
 
   // Attach events
-  vNode.eventsRefs.forEach((event) => {
+  vNode.eventRefs.forEach((event) => {
     changes.push({
       type: "event",
       action: "create",

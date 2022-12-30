@@ -15,7 +15,7 @@ runtimes and platforms as well.
 
 ## On the roadmap (Not implemented yet)
 
-- Component lifecycle hooks/effects for asynchronous calls and cleanup logic
+- Component lifecycle hooks for asynchronous calls and cleanup logic
 
 ## Integration with Cargo
 

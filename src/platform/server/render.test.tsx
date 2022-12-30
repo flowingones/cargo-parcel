@@ -12,30 +12,30 @@ function Headline(props: JSX.ElementProps) {
 }
 
 Deno.test(
-  "Platform Server: Render to string",
+  "Platform Server:",
   async (t) => {
-    await t.step("Component with children: <Headline>Hello<Headline/>", () => {
+    await t.step("should render headline component with text", () => {
       assertEquals(
         renderToString(<Headline>Hello</Headline>),
         "<h1>Hello</h1>",
       );
     });
 
-    await t.step("Component without children: <Title/>", () => {
+    await t.step("should render self closing compoent", () => {
       assertEquals(
         renderToString(<Title />),
         "<h1>Hello World!</h1>",
       );
     });
 
-    await t.step("HTML Tag: <div>Hello</div>", () => {
+    await t.step("should render div with text", () => {
       assertEquals(
         renderToString(<div class="bg-red">Hello</div>),
         '<div class="bg-red">Hello</div>',
       );
     });
 
-    await t.step("HTML Single Tag: <img/>", () => {
+    await t.step("should render image", () => {
       assertEquals(
         renderToString(
           <img
@@ -46,7 +46,7 @@ Deno.test(
         '<img href="https://cargo.wtf" alt="A very interesting description :-)"/>',
       );
     });
-    await t.step("SVG Element: <svg>", () => {
+    await t.step("should render svg", () => {
       assertEquals(
         renderToString(
           <svg

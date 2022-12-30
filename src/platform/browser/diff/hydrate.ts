@@ -35,6 +35,8 @@ function element(
 ) {
   const changes: ChangeSet<unknown>[] = [];
 
+  console.log(props);
+
   // Replace dom node with effective vnode type
   if (props.node.nodeName.toLowerCase() !== props.vNode.tag) {
     changes.push({
@@ -45,10 +47,13 @@ function element(
   } else {
     // Link current dom node with the vnode
     props.vNode.nodeRef = props.node;
+    props.vNode.hooks?.onMount?.forEach((hook) => {
+      hook();
+    });
   }
 
   // Attach events to the dom node
-  props.vNode.eventsRefs?.forEach((eventRef) => {
+  props.vNode.eventRefs?.forEach((eventRef) => {
     changes.push(
       <EventChangeSet> {
         action: "create",

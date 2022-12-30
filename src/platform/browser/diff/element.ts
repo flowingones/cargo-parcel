@@ -39,6 +39,7 @@ export interface ElementChangeSet extends
 }
 
 export function element(change: ElementChangeSet): void {
+  // Create an new element in the dom
   if (change.action === "create") {
     return create(<CreateElementPayload> change.payload);
   }
@@ -76,6 +77,10 @@ function attach(payload: AttachElementPayload): void {
   if (payload.vNode.type === VType.ELEMENT && payload.vNode.nodeRef) {
     (<Node> payload.parentVNode.nodeRef)?.appendChild(payload.vNode.nodeRef);
   }
+  // Run lifecycle "onMount" dhooks associated with this element.
+  payload.vNode.hooks?.onMount?.forEach((hook) => {
+    hook();
+  });
 }
 
 function replace(payload: ReplaceElementPayload): void {
@@ -107,6 +112,10 @@ function remove(payload: DeleteElementPayload): void {
   (<Node> payload.parentVNode.nodeRef).removeChild(
     <Node> payload.vNode.nodeRef,
   );
+  // Run lifecycle "onDestroy" hooks associated with this element.
+  payload.vNode.hooks?.onDestroy?.forEach((hook) => {
+    hook();
+  });
 }
 
 function createElement(vNode: VElement<Node>, parentNode: Node): Node {

@@ -1,5 +1,5 @@
 import { VMode } from "../mod.ts";
-import { componentsCache, VComponent } from "./deps.ts";
+import { scope, VComponent } from "./deps.ts";
 import { cycle } from "./mod.ts";
 
 export interface VStateComponent<T> extends VComponent<unknown> {
@@ -15,12 +15,11 @@ export type State<T> = [
 const stateCache: State<unknown>[] = [];
 
 export function state<T>(value: T): State<T> {
-  if (!componentsCache.toCreate.length) {
+  if (!scope.length) {
     throw Error("State could neither be created nor returned!");
   }
 
-  const vComponent: VStateComponent<T> =
-    componentsCache.toCreate[componentsCache.toCreate.length - 1];
+  const vComponent: VStateComponent<T> = scope[scope.length - 1];
 
   // If state is left in the current VComponent scope return it.
   if (stateCache.length) {
