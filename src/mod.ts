@@ -1,8 +1,9 @@
 // Cargo Parcel – Version 0.1.63
 export { tag } from "./tag.ts";
-export { componentsCache } from "./registry.ts";
 export {
   AST,
+  scope,
+  type VBase,
   type VComponent,
   type VElement,
   VMode,

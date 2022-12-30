@@ -1,0 +1,1 @@
+export { onMount, onDestroy } from "./lifecycle.ts"

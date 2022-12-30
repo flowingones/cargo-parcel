@@ -1,5 +1,6 @@
 import "./types.ts";
-import { componentsCache } from "./registry.ts";
+
+export const scope: VComponent<unknown>[] = [];
 
 export enum VMode {
   NotCreated,
@@ -17,10 +18,19 @@ export interface ElementProps<T> {
   children?: VNode<T>[];
 }
 
-export interface VNodeRef<T> {
-  type: VType.TEXT | VType.ELEMENT;
+export interface VBase {
+  type: VType;
+  hooks?: VHooks;
+}
+
+export interface VHooks {
+  onMount?: (() => () => void)[];
+  onDestroy?: (() => void)[];
+}
+
+export interface VNodeRef<T> extends VBase {
   nodeRef?: T;
-  eventsRefs: JSX.EventRef[];
+  eventRefs: JSX.EventRef[];
   children?: VNode<T>[];
 }
 
@@ -35,7 +45,7 @@ export interface VText<T> extends VNodeRef<T> {
   text: string;
 }
 
-export interface VComponent<T> {
+export interface VComponent<T> extends VBase {
   type: VType.COMPONENT;
   mode: VMode;
   id: symbol;
@@ -81,7 +91,7 @@ function text<T>(text: string): VText<T> {
   return {
     type: VType.TEXT,
     text: `${text}`,
-    eventsRefs: [],
+    eventRefs: [],
   };
 }
 
@@ -92,7 +102,7 @@ function element<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
     type: VType.ELEMENT,
     tag: <string> tag,
     props: <ElementProps<T>> props,
-    eventsRefs: eventRefs,
+    eventRefs: eventRefs,
     children: children?.map((child, i) => {
       if (typeof child === "number") {
         child = `${child}`;
@@ -132,10 +142,10 @@ function createComponent<T>(node: JSX.Element) {
     props,
   };
 
-  componentsCache.toCreate.push(component);
+  scope.push(component);
   component.ast = create(component.fn(props));
   component.mode = VMode.Created;
-  componentsCache.toCreate.shift();
+  scope.shift();
 
   return component;
 }
@@ -153,9 +163,9 @@ function updateComponent<T>(vComponent: VComponent<T>) {
     ...rest,
   };
 
-  componentsCache.toCreate.push(updatedVComponent);
+  scope.push(updatedVComponent);
   const node = fn(props);
-  componentsCache.toCreate.shift();
+  scope.shift();
 
   updatedVComponent.ast = track(node, ast);
   return updatedVComponent;

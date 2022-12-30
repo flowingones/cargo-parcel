@@ -22,9 +22,9 @@ export function diff(
 ): ChangeSet<unknown>[] {
   let { vNode, previousVNode, parentVNode, node } = props;
 
-  parentVNode = skipVComponents(parentVNode);
+  parentVNode = parentVNode ? skipVComponents(parentVNode) : undefined;
   vNode = skipVComponents(vNode);
-  previousVNode = skipVComponents(previousVNode);
+  previousVNode = previousVNode ? skipVComponents(previousVNode) : undefined;
 
   if (toBeHydrated(node, vNode, previousVNode)) {
     return hydrate({
@@ -98,6 +98,9 @@ function skipVComponents<T>(
   vNode: VNode<T>,
 ): VElement<T> | VText<T> | undefined {
   if (vNode?.type === VType.COMPONENT) {
+    if (vNode.ast && vNode.hooks) {
+      vNode.ast.hooks = { ...vNode.hooks };
+    }
     return skipVComponents(vNode.ast);
   }
   return vNode || undefined;

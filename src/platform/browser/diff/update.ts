@@ -148,25 +148,25 @@ export function updateEvents(
   const changes: EventChangeSet[] = [];
 
   // Remove previous events
-  previousvNode?.eventsRefs?.forEach((previousEvent) => {
+  previousvNode?.eventRefs?.forEach((eventRef) => {
     changes.push({
       action: "delete",
       type: "event",
       payload: {
         vNode: previousvNode,
-        ...previousEvent,
+        ...eventRef,
       },
     });
   });
 
   // Attach new events
-  vNode?.eventsRefs?.forEach((event) => {
+  vNode?.eventRefs?.forEach((eventRef) => {
     changes.push({
       action: "create",
       type: "event",
       payload: {
         vNode,
-        ...event,
+        ...eventRef,
       },
     });
   });
@@ -200,7 +200,7 @@ export function updateChildren(
   if (props.previousVNode && Array.isArray(props.previousVNode.children)) {
     previousChildren = [...props.previousVNode.children];
   }
-  props.vNode?.children?.forEach((child, index) => {
+  props.vNode?.children?.forEach((child) => {
     changes.push(...diff({
       parentVNode: props.vNode,
       vNode: child,

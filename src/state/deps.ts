@@ -1,1 +1,1 @@
-export { componentsCache, type VComponent } from "../mod.ts";
+export { scope, type VComponent } from "../mod.ts";

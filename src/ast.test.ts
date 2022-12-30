@@ -2,7 +2,7 @@ import { AST, tag, VComponent, VElement, VMode, VText, VType } from "./mod.ts";
 import { state } from "./state/mod.ts";
 import { assert, assertEquals } from "./test_deps.ts";
 
-Deno.test("should create a vText", async (t) => {
+Deno.test("AST: vText", async (t) => {
   const vText = AST.create("hello world");
 
   await t.step('should have type equals "vText"', () => {
@@ -12,11 +12,11 @@ Deno.test("should create a vText", async (t) => {
     assertEquals((<VText<unknown>> vText).text, "hello world");
   });
   await t.step('should have empty prop "eventRefs"', () => {
-    assertEquals((<VText<unknown>> vText).eventsRefs, []);
+    assertEquals((<VText<unknown>> vText).eventRefs, []);
   });
 });
 
-Deno.test('should create a "vElement"', async (t) => {
+Deno.test("AST: vElement", async (t) => {
   const vElement = AST.create(
     tag("div", { class: "button" }, ["hello"]),
   );
@@ -25,7 +25,7 @@ Deno.test('should create a "vElement"', async (t) => {
   });
 });
 
-Deno.test('should create "vComponent"', async (t) => {
+Deno.test("AST: vComponent", async (t) => {
   const vNode = <VComponent<unknown>> AST.create(tag(App, null, []));
 
   await t.step('should have type "vComponent"', () => {
@@ -51,7 +51,7 @@ Deno.test('should create "vComponent"', async (t) => {
 Deno.test("should update vComponent", async (t) => {
   const vNode = <VComponent<unknown>> AST.create(tag(App, null, []));
 
-  await t.step('Attribute: "class" before AST update', () => {
+  await t.step("should have attribute class before update", () => {
     // @ts-ignore
     assert((<VComponent<unknown>> vNode).ast?.props?.class === "blue");
   });
