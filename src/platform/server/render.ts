@@ -32,22 +32,18 @@ export function renderToString(
 }
 
 function stringify<T>(vNode: VNode<T>): string {
-  // VNode is null or undefined
   if (!vNode) return "";
 
-  // VNode is VText
   if (
     vNode.type === VType.TEXT
   ) {
     return escapeHtml((<VText<T>> vNode).text.toString());
   }
 
-  // VNode is VElement
   if (vNode.type === VType.ELEMENT) {
     return elementToString(<VElement<T>> vNode);
   }
 
-  //VNode is VComponent
   if (vNode.type === VType.COMPONENT) {
     return stringify(<VComponent<T>> vNode.ast);
   }
