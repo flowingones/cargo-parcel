@@ -21,21 +21,21 @@ Deno.test(
       );
     });
 
-    await t.step("should render self closing compoent", () => {
+    await t.step("should render self closing component as string", () => {
       assertEquals(
         renderToString(<Title />),
         "<h1>Hello World!</h1>",
       );
     });
 
-    await t.step("should render div with text", () => {
+    await t.step("should render div with text as string", () => {
       assertEquals(
         renderToString(<div class="bg-red">Hello</div>),
         '<div class="bg-red">Hello</div>',
       );
     });
 
-    await t.step("should render image", () => {
+    await t.step("should render image as string", () => {
       assertEquals(
         renderToString(
           <img
@@ -46,7 +46,7 @@ Deno.test(
         '<img href="https://cargo.wtf" alt="A very interesting description :-)"/>',
       );
     });
-    await t.step("should render svg", () => {
+    await t.step("should render svg as string", () => {
       assertEquals(
         renderToString(
           <svg
