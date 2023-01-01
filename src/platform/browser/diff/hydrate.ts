@@ -35,8 +35,6 @@ function element(
 ) {
   const changes: ChangeSet<unknown>[] = [];
 
-  console.log(props);
-
   // Replace dom node with effective vnode type
   if (props.node.nodeName.toLowerCase() !== props.vNode.tag) {
     changes.push({
