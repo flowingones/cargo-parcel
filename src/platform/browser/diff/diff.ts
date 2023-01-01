@@ -1,4 +1,4 @@
-import { VElement, VNode, VText, VType } from "./deps.ts";
+import { VElement, VHooks, VNode, VText, VType } from "./deps.ts";
 
 import {
   type ChangeSet,
@@ -98,10 +98,47 @@ function skipVComponents<T>(
   vNode: VNode<T>,
 ): VElement<T> | VText<T> | undefined {
   if (vNode?.type === VType.COMPONENT) {
-    if (vNode.ast && vNode.hooks) {
-      vNode.ast.hooks = { ...vNode.hooks };
+    if (vNode.hooks && vNode.ast) {
+      passHooks(vNode.hooks, vNode.ast);
     }
     return skipVComponents(vNode.ast);
   }
   return vNode || undefined;
+}
+
+// TODO: Should be optimised in terms of size and performance
+function passHooks(hooks: VHooks, to: { hooks?: VHooks }) {
+  if (typeof to.hooks === "undefined") {
+    to.hooks = {};
+  }
+
+  if (Array.isArray(hooks.onMount)) {
+    if (Array.isArray(to.hooks.onMount)) {
+      for (const hook of hooks.onMount) {
+        const exists = to.hooks.onMount.find((ref) => {
+          return ref === hook;
+        });
+        if (!exists) {
+          to.hooks.onMount.push(hook);
+        }
+      }
+    } else {
+      to.hooks.onMount = [...hooks.onMount];
+    }
+  }
+
+  if (Array.isArray(hooks.onDestroy)) {
+    if (Array.isArray(to.hooks.onDestroy)) {
+      for (const hook of hooks.onDestroy) {
+        const exists = to.hooks.onDestroy.find((ref) => {
+          return ref === hook;
+        });
+        if (!exists) {
+          to.hooks.onDestroy.push(hook);
+        }
+      }
+    } else {
+      to.hooks.onDestroy = [...hooks.onDestroy];
+    }
+  }
 }

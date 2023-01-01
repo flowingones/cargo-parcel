@@ -1,13 +1,29 @@
-import { scope } from "./deps.ts";
+import { scope, VMode } from "./deps.ts";
 
 export function onMount(fn: () => () => void) {
-  scope[scope.length - 1].hooks = {
-    onMount: [fn],
-  };
+  const vComponent = scope[scope.length - 1];
+
+  if (vComponent.mode === VMode.NotCreated) {
+    if (!vComponent.hooks) {
+      vComponent.hooks = {};
+    }
+
+    vComponent.hooks.onMount = Array.isArray(vComponent.hooks.onMount)
+      ? [...vComponent.hooks.onMount, fn]
+      : [fn];
+  }
 }
 
 export function onDestroy(fn: () => void) {
-  scope[scope.length - 1].hooks = {
-    onDestroy: [fn],
-  };
+  const vComponent = scope[scope.length - 1];
+
+  if (vComponent.mode === VMode.NotCreated) {
+    if (!vComponent.hooks) {
+      vComponent.hooks = {};
+    }
+
+    vComponent.hooks.onDestroy = Array.isArray(vComponent.hooks.onDestroy)
+      ? [...vComponent.hooks.onDestroy, fn]
+      : [fn];
+  }
 }
