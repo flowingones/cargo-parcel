@@ -1,4 +1,5 @@
 import { parse, VComponent, VElement, VNode, VType } from "./deps.ts";
+import { info } from "cargo/utils/mod.ts";
 
 export interface Island {
   class: string;
@@ -7,9 +8,10 @@ export interface Island {
 }
 
 /**
- * Find islands in vNode
- * @param {VNode} vNode - The vnode to find the islands in it
- * @param {Island[]} islands - The islands to find in the vnode
+ * Find islands in vNode and attach css class to closest
+ * vElement for hydration in the frontend
+ * @param {VNode} vNode - The vNode to find the islands in
+ * @param {Island[]} islands - The islands to search in the vNode
  */
 export function findIslands(
   vNode: VNode<unknown>,
@@ -28,10 +30,7 @@ export function findIslands(
   if (vNode?.type === VType.COMPONENT) {
     const island = isIsland(vNode, islands);
     if (island) {
-      (typeof (<VElement<unknown>> vNode.ast).props.class === "string")
-        ? (<VElement<unknown>> vNode.ast).props.class =
-          (<VElement<unknown>> vNode.ast).props.class + " " + island.class
-        : (<VElement<unknown>> vNode.ast).props.class = island.class;
+      attachIslandClassToVElement(vNode.ast, island);
       return [island];
     }
     return [...findIslands(vNode.ast, islands)];
@@ -54,4 +53,36 @@ function isIsland(
     }
   }
   return;
+}
+
+function attachIslandClassToVElement(
+  vNode: VNode<unknown> | undefined,
+  island: Island,
+): void {
+  const vElement = findClosestVElement(vNode);
+
+  if (vElement) {
+    typeof vElement.props.class === "string"
+      ? vElement.props.class = vElement.props.class + " " + island.class
+      : vElement.props.class = island.class;
+  }
+
+  info(
+    `Island (${island.path})`,
+    `No vElement found to attach the class "${island.class}" for island hydration in the frontend`,
+    "CARGO PARCEL",
+  );
+}
+
+function findClosestVElement(
+  vNode: VNode<unknown>,
+): VElement<unknown> | undefined {
+  if (vNode?.type === VType.TEXT || !vNode) return;
+
+  if (vNode?.type === VType.COMPONENT) {
+    return findClosestVElement(vNode.ast);
+  }
+
+  // Only type VElement is left
+  return vNode;
 }
