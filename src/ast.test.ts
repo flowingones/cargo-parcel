@@ -1,6 +1,6 @@
 import { AST, tag, VComponent, VElement, VMode, VText, VType } from "./mod.ts";
 import { state } from "./state/mod.ts";
-import { assert, assertEquals } from "./test_deps.ts";
+import { assert, assertEquals } from "std/testing/asserts.ts";
 
 Deno.test("AST: vText", async (t) => {
   const vText = AST.create("hello world");

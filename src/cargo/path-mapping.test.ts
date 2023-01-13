@@ -1,23 +1,23 @@
-import { assertEquals } from "https://deno.land/std@0.159.0/testing/asserts.ts";
+import { assertEquals } from "std/testing/asserts.ts";
 import { mappedPath } from "./path-mapping.ts";
 
-Deno.test("Handle path mapping", async (t) => {
-  await t.step("Map: /index", () => {
+Deno.test(mappedPath.name, async (t) => {
+  await t.step('Should map "/index"', () => {
     assertEquals(mappedPath("/index"), "/");
     assertEquals(mappedPath("/dir/index"), "/dir");
     assertEquals(mappedPath("/dir/dir/index"), "/dir/dir");
   });
-  await t.step("Map: /_404", () => {
+  await t.step('Should map "/_404"', () => {
     assertEquals(mappedPath("/_404"), "/*");
     assertEquals(mappedPath("/dir/_404"), "/dir/*");
     assertEquals(mappedPath("/dir/dir/_404"), "/dir/dir/*");
   });
-  await t.step("Map: Others", () => {
+  await t.step("should map static routes", () => {
     assertEquals(mappedPath("/file"), "/file");
     assertEquals(mappedPath("/dir/file"), "/dir/file");
     assertEquals(mappedPath("/dir/dir/file"), "/dir/dir/file");
   });
-  await t.step("Map: dynamic parts", () => {
+  await t.step("should map dynamic routes", () => {
     assertEquals(mappedPath("/[file]"), "/:file");
     assertEquals(mappedPath("/[dir]/[file]"), "/:dir/:file");
     assertEquals(mappedPath("/[dir]/[dir]/[file]"), "/:dir/:dir/:file");
