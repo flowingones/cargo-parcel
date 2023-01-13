@@ -1,3 +1,6 @@
 {
-  "cargo/": "https://deno.land/x/cargo@0.1.48/"
+  "imports": {
+    "std/": "https://deno.land/std@0.172.0/",
+    "cargo/": "https://deno.land/x/cargo@0.1.48/"
+  }
 }
