@@ -65,6 +65,7 @@ function attachIslandClassToVElement(
     typeof vElement.props.class === "string"
       ? vElement.props.class = vElement.props.class + " " + island.class
       : vElement.props.class = island.class;
+    return;
   }
 
   info(
