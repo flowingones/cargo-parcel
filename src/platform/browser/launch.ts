@@ -41,7 +41,7 @@ export function launch(islands: Island[]) {
       );
       typeof (<VElement<Node>> vNode.ast).props.class === "string"
         ? (<VElement<Node>> vNode.ast).props.class = `${
-          (<VElement<Node>> vNode.ast).props.classy
+          (<VElement<Node>> vNode.ast).props.class
         } ${island.class}`
         : (<VElement<Node>> vNode.ast).props.class = island.class;
       sync(node, vNode);
