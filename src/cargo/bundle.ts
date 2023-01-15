@@ -9,7 +9,7 @@ let esbuildInit = false;
 export async function bundle(props: BundleProps) {
   if (Deno.run === undefined && !esbuildInit) {
     await esbuild.initialize({
-      wasmURL: "https://deno.land/x/esbuild@v0.15.14/esbuild.wasm",
+      wasmURL: "https://deno.land/x/esbuild@v0.17.0/esbuild.wasm",
       worker: false,
     });
     esbuildInit = true;
