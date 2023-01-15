@@ -39,6 +39,7 @@ function updateElement(
   let skipPrevious = false;
 
   vNode.nodeRef = <Node> previousVNode.nodeRef;
+  vNode.hooks = previousVNode.hooks;
 
   // Tag did change
   if (vNode.tag !== (<VElement<Node>> previousVNode).tag) {
