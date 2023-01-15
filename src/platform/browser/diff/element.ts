@@ -77,9 +77,16 @@ function attach(payload: AttachElementPayload): void {
   if (payload.vNode.type === VType.ELEMENT && payload.vNode.nodeRef) {
     (<Node> payload.parentVNode.nodeRef)?.appendChild(payload.vNode.nodeRef);
   }
-  // Run lifecycle "onMount" dhooks associated with this element.
+  // Run lifecycle "onMount" hooks associated with this element.
   payload.vNode.hooks?.onMount?.forEach((hook) => {
-    hook();
+    const onDestroy = hook();
+    if (typeof onDestroy === "function" && payload.vNode.hooks) {
+      if (Array.isArray(payload.vNode.hooks.onDestroy)) {
+        payload.vNode.hooks.onDestroy.push(onDestroy);
+        return;
+      }
+      payload.vNode.hooks.onDestroy = [onDestroy];
+    }
   });
 }
 
