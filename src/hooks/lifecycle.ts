@@ -1,6 +1,6 @@
 import { scope, VMode } from "./deps.ts";
 
-export function onMount(fn: () => () => void | void) {
+export function onMount(fn: () => (() => void) | void) {
   const vComponent = scope[scope.length - 1];
 
   if (vComponent.mode === VMode.NotCreated) {
