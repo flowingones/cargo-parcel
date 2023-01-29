@@ -2,15 +2,10 @@ import { assertEquals } from "std/testing/asserts.ts";
 import { mappedPath } from "./path-mapping.ts";
 
 Deno.test(mappedPath.name, async (t) => {
-  await t.step('Should map "/index"', () => {
-    assertEquals(mappedPath("/index"), "/");
-    assertEquals(mappedPath("/dir/index"), "/dir");
-    assertEquals(mappedPath("/dir/dir/index"), "/dir/dir");
-  });
-  await t.step('Should map "/_404"', () => {
-    assertEquals(mappedPath("/_404"), "/*");
-    assertEquals(mappedPath("/dir/_404"), "/dir/*");
-    assertEquals(mappedPath("/dir/dir/_404"), "/dir/dir/*");
+  await t.step('Should map "/!404"', () => {
+    assertEquals(mappedPath("!404"), "/*");
+    assertEquals(mappedPath("/dir/!404"), "/dir/*");
+    assertEquals(mappedPath("/dir/dir/!404"), "/dir/dir/*");
   });
   await t.step("should map static routes", () => {
     assertEquals(mappedPath("/file"), "/file");
