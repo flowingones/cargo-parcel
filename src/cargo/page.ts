@@ -8,7 +8,8 @@ import { findIslands, type Island } from "./islands.ts";
 export const cleanup: Array<() => void> = [];
 
 interface PageFromProps {
-  component: JSX.Component;
+  page: JSX.Component;
+  layouts?: JSX.Component[];
   islands?: Record<string, JSX.Component>;
   scripts?: string[];
   params?: Record<string, string>;
@@ -19,7 +20,10 @@ export function pageFrom(props: PageFromProps) {
   const scripts = props.scripts || [];
 
   const vNode = <VComponent<unknown>> AST.create(
-    tag(props.component, { params: props.params }, []),
+    nestLayouts(
+      tag(props.page, { params: props.params }, []),
+      props.layouts,
+    ),
   );
 
   if (props.islands) {
@@ -78,4 +82,16 @@ function htmlFrom(props: HtmlFromProps) {
   }</head><body ${props.bodyAttributes?.join(" ") || ""}>${props.body}${
     props.footer?.script?.join("") || ""
   }${props.footer?.noscript?.join("") || ""}</body></html>`;
+}
+
+function nestLayouts(
+  page: JSX.Element,
+  layouts?: JSX.Component[],
+) {
+  if (layouts?.length) {
+    return layouts.reduce<JSX.Element>((accumulator, currentLayout) => {
+      return tag(currentLayout, null, [accumulator]);
+    }, page);
+  }
+  return page;
 }

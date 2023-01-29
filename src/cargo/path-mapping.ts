@@ -5,17 +5,10 @@ interface PathMapping {
 }
 
 const pathMappings = new Map<string, PathMapping>([
-  ["/index", { path: "" }],
-  ["/_404", { path: "/*" }],
+  ["/!404", { path: "/*" }],
 ]);
 
-/*
- *
- */
 export function mappedPath(path: string): string {
-  /*
-   *
-   */
   const parsedPath = parse(path);
   const mappedPath = pathMappings.get(`/${parsedPath.name}`);
   if (mappedPath) {

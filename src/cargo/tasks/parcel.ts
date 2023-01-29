@@ -3,12 +3,17 @@ import { parse } from "../deps.ts";
 import { mappedPath, pageFrom } from "../mod.ts";
 import { Plugin, plugins } from "../plugin.ts";
 
+export interface Route {
+  page: Page;
+  layouts: Page[];
+}
+
 export interface Page {
   default: JSX.Component;
 }
 
 interface ParcelProps {
-  pages: Record<string, Page>;
+  pages: Record<string, Route>;
   islands?: Record<string, JSX.Component>;
   plugins?: Plugin[];
 }
@@ -64,14 +69,20 @@ export async function Parcel(props: ParcelProps) {
     }
 
     for (const route in props.pages) {
-      const component: JSX.Component = props.pages[route].default;
+      const page: JSX.Component = props.pages[route].page.default;
+      const layouts: JSX.Component[] = props.pages[route].layouts.map(
+        (layout) => {
+          return layout.default;
+        },
+      );
 
       router.add({
         path: mappedPath(route),
         method: "GET",
         handler: async (ctx: any) => {
           let renderedPage = pageFrom({
-            component,
+            page,
+            layouts,
             islands: props.islands,
             scripts,
             params: ctx.params,
