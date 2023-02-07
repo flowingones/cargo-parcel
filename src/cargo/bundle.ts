@@ -28,7 +28,7 @@ export async function bundle(props: BundleProps) {
     treeShaking: true,
     splitting: true,
     outdir: ".",
-    minify: false,
+    minify: true,
     platform: "neutral",
     write: false,
     jsxFactory: "tag",
