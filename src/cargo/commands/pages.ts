@@ -1,4 +1,4 @@
-import { dirname, join, parseArgs, toFileUrl, walk } from "../deps.ts";
+import { dirname, join, parseArgs, walk } from "../deps.ts";
 import { createManifestDirectroy } from "./manifest.ts";
 
 interface FileImport {
@@ -83,8 +83,8 @@ async function scan(
   }
 
   return {
-    pages: sortRoutes(pages, basePath),
-    layouts: sortRoutes(layouts, basePath),
+    pages: sortImports(pages, basePath),
+    layouts: sortImports(layouts),
   };
 }
 
@@ -130,12 +130,12 @@ export function pages() {
   };
 }
 
-function sortRoutes(imports: FileImport[], basePath: string): FileImport[] {
+function sortImports(imports: FileImport[], basePath?: string): FileImport[] {
   return imports.sort((a, b) => {
     const al = a.path.toLowerCase();
     const bl = b.path.toLowerCase();
 
-    if (al === basePath) {
+    if (typeof basePath !== "undefined" && al === basePath) {
       return -1;
     }
 
