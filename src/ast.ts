@@ -24,7 +24,7 @@ export interface VBase {
 }
 
 export interface VHooks {
-  onMount?: (() => () => void)[];
+  onMount?: ((() => () => void) | (() => void))[];
   onDestroy?: (() => void)[];
 }
 
