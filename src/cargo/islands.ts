@@ -20,6 +20,12 @@ export function findIslands(
   const cache: Island[] = [];
   if (vNode?.type === VType.TEXT) return [];
 
+  if (vNode?.type === VType.FRAGMENT) {
+    vNode.children.forEach((child) => {
+      cache.push(...findIslands(child, islands));
+    });
+  }
+
   if (vNode?.type === VType.ELEMENT) {
     vNode.children?.forEach((child) => {
       cache.push(...findIslands(child, islands));
@@ -78,7 +84,13 @@ function attachIslandClassToVElement(
 function findClosestVElement(
   vNode: VNode<unknown>,
 ): VElement<unknown> | undefined {
-  if (vNode?.type === VType.TEXT || !vNode) return;
+  if (
+    vNode?.type === VType.TEXT ||
+    vNode?.type === VType.FRAGMENT ||
+    !vNode
+  ) {
+    return;
+  }
 
   if (vNode?.type === VType.COMPONENT) {
     return findClosestVElement(vNode.ast);
