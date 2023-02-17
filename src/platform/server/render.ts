@@ -40,6 +40,12 @@ function stringify<T>(vNode: VNode<T>): string {
     return escapeHtml((<VText<T>> vNode).text.toString());
   }
 
+  if (vNode.type === VType.FRAGMENT) {
+    return vNode.children.map((vNode) => {
+      return stringify(vNode);
+    }).join("");
+  }
+
   if (vNode.type === VType.ELEMENT) {
     return elementToString(<VElement<T>> vNode);
   }
