@@ -37,7 +37,7 @@ export function launch(islands: Island[]) {
     const node = document.querySelector(`.${island.class}`);
     if (node) {
       const vNode = <VComponent<Node>> AST.create<Node>(
-        tag(island.node, island.props, []),
+        tag(island.node, island.props),
       );
       typeof (<VElement<Node>> vNode.ast).props.class === "string"
         ? (<VElement<Node>> vNode.ast).props.class = `${
