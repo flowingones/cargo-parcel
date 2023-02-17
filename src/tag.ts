@@ -3,11 +3,11 @@ import "./types.ts";
 import { eventName, isEventName } from "./event.ts";
 
 export function tag(
-  tag: string | ((props: JSX.ElementProps) => JSX.Element),
+  tag: string | JSX.Component,
   attributes: JSX.IntrinsicElements | null,
   ...children: JSX.Node[] | JSX.Node[][]
 ): JSX.Element {
-  const { ...props }: JSX.ElementProps = attributes || {};
+  const { ...props }: JSX.IntrinsicElements = attributes || {};
 
   const eventRefs: JSX.EventRef[] = [];
 
@@ -22,7 +22,8 @@ export function tag(
   }
 
   return {
-    tag,
+    //@ts-ignore catch the fragment which return null
+    tag: tag === Fragment ? 0 : tag,
     props,
     eventRefs,
     children: collectTextNodes(flatten(children)),
@@ -71,4 +72,8 @@ function collectTextNodes(nodes?: JSX.Node[]): JSX.Node[] {
         return false;
       },
     ) || [];
+}
+
+export function Fragment() {
+  return null;
 }

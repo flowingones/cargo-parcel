@@ -3,20 +3,20 @@ declare global {
     type Node = string | Element | undefined | null;
 
     type Element = {
-      tag: string | Component;
+      tag: string | 0 | Component;
       eventRefs: EventRef[];
-      props: ElementProps;
+      props: IntrinsicElements;
       children: Node[];
     };
 
-    type Component = (props: ElementProps) => Element;
+    type Component = (props: ComponentProps) => JSX.Element | null;
 
     type EventRef = {
       name: string;
       listener: () => void;
     };
 
-    type ElementProps = {
+    type ComponentProps = {
       children?: Node[];
       [type: string]: unknown;
     };

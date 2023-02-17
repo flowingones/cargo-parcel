@@ -1,5 +1,5 @@
 // Cargo Parcel – Version 0.1.71
-export { tag } from "./tag.ts";
+export { Fragment, tag } from "./tag.ts";
 export {
   AST,
   scope,

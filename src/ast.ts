@@ -11,6 +11,7 @@ export enum VType {
   TEXT,
   ELEMENT,
   COMPONENT,
+  FRAGMENT,
 }
 
 export interface ElementProps<T> {
@@ -49,13 +50,20 @@ export interface VComponent<T> extends VBase {
   type: VType.COMPONENT;
   mode: VMode;
   id: symbol;
-  fn: (props: JSX.ElementProps) => JSX.Element;
-  props: JSX.ElementProps;
+  fn: JSX.Component;
+  props: JSX.ComponentProps;
   ast: VNode<T>;
+}
+
+export interface VFragment<T> extends VBase {
+  type: VType.FRAGMENT;
+  props: JSX.ComponentProps;
+  children: VNode<T>[];
 }
 
 export type VNode<T> =
   | VComponent<T>
+  | VFragment<T>
   | VElement<T>
   | VText<T>
   | undefined
@@ -70,6 +78,10 @@ function create<T>(node: JSX.Node): VNode<T> {
 
   if (typeof node.tag === "string") {
     return element(node);
+  }
+
+  if (node.tag === 0) {
+    return fragment(node);
   }
 
   if (typeof node.tag === "function") {
@@ -95,6 +107,14 @@ function text<T>(text: string): VText<T> {
   };
 }
 
+function fragment<T>(node: JSX.Element): VFragment<T> {
+  return {
+    type: VType.FRAGMENT,
+    props: node.props,
+    children: node.children.map((child) => create(child)),
+  };
+}
+
 function element<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
   const { tag, children, eventRefs, props, ...rest } = node;
 
@@ -103,7 +123,7 @@ function element<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
     tag: <string> tag,
     props: <ElementProps<T>> props,
     eventRefs: eventRefs,
-    children: children?.map((child, i) => {
+    children: children.map((child, i) => {
       if (typeof child === "number") {
         child = `${child}`;
       }
@@ -136,7 +156,7 @@ function createComponent<T>(node: JSX.Element) {
   const component: VComponent<T> = {
     type: VType.COMPONENT,
     ast: undefined,
-    id: Symbol("Parcel Component ID"),
+    id: Symbol(),
     mode: VMode.NotCreated,
     fn: tag,
     props,
