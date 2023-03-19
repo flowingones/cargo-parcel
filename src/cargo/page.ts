@@ -4,6 +4,7 @@ import { getHead, Head } from "./head.ts";
 import { bodyAttributes } from "./body.ts";
 import { Footer, footer, getFooter } from "./footer.ts";
 import { findIslands, type Island } from "./islands.ts";
+import { BUILD_ID } from "./constants.ts";
 
 export const cleanup: Array<() => void> = [];
 
@@ -34,12 +35,14 @@ export function pageFrom(props: PageFromProps) {
     footer({
       script: [
         ...scripts,
-        `<script type="module">import { launch } from "/main.js";
+        `<script type="module">import { launch } from "/_parcel/${BUILD_ID}/main.js";
 ${
           islands.map((island) =>
             `import ${
               parse(island.path).name.replaceAll("-", "")
-            } from "/island-${parse(island.path).name}.js";\n`
+            } from "/_parcel/${BUILD_ID}/island-${
+              parse(island.path).name
+            }.js";\n`
           ).join("")
         }
 launch([${

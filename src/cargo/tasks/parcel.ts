@@ -1,4 +1,5 @@
 import { bundle } from "../bundle.ts";
+import { BUILD_ID, isProd } from "../constants.ts";
 import { parse } from "../deps.ts";
 import { mappedPath, pageFrom } from "../mod.ts";
 import { Plugin, plugins } from "../plugin.ts";
@@ -55,12 +56,15 @@ export async function Parcel(props: ParcelProps) {
         entryPoints: entryPoints,
       }))?.forEach((file) => {
         router.add({
-          path: `/${parse(file.path).name.replaceAll("$", "")}.js`,
+          path: `/_parcel/${BUILD_ID}/${
+            parse(file.path).name.replaceAll("$", "")
+          }.js`,
           method: "GET",
           handler: () => {
             return new Response(file.contents, {
               headers: {
                 "content-type": "application/javascript",
+                ...(isProd ? { "cache-control": "max-age=3600" } : {}),
               },
             });
           },
