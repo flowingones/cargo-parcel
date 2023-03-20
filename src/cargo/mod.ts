@@ -6,3 +6,4 @@ export { body } from "./body.ts";
 export { html } from "./html.ts";
 export { pageFrom } from "./page.ts";
 export { findIslands, type Island } from "./islands.ts";
+export { BUILD_ID } from "./constants.ts";
