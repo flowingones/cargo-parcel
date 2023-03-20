@@ -1,4 +1,5 @@
 import { denoPlugin, esbuild } from "./deps.ts";
+import { isProd } from "cargo/utils/environment.ts";
 
 interface BundleProps {
   entryPoints: Record<string, string>;
@@ -28,7 +29,7 @@ export async function bundle(props: BundleProps) {
     treeShaking: true,
     splitting: true,
     outdir: ".",
-    minify: true,
+    minify: isProd(),
     platform: "neutral",
     write: false,
     jsxFactory: "tag",
