@@ -64,8 +64,8 @@ export async function Parcel(props: ParcelProps) {
           handler: () => {
             return new Response(file.contents, {
               headers: {
-                "content-type": "application/javascript",
-                ...(isProd() ? { "cache-control": "max-age=3600" } : {}),
+                "Content-Type": "application/javascript",
+                ...(isProd() ? { "Cache-Control": "max-age=3600" } : {}),
               },
             });
           },
@@ -103,7 +103,7 @@ export async function Parcel(props: ParcelProps) {
             renderedPage,
             {
               headers: {
-                "content-type": "text/html",
+                "Content-Type": "text/html",
               },
             },
           );
