@@ -1,4 +1,4 @@
-import { parse } from "./deps.ts";
+import { parse } from "std/path/mod.ts";
 
 interface PathMapping {
   path: string;

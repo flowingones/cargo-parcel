@@ -1,6 +1,7 @@
+import { isProd } from "cargo/utils/environment.ts";
+import { parse } from "std/path/mod.ts";
 import { bundle } from "../bundle.ts";
-import { BUILD_ID, isProd } from "../constants.ts";
-import { parse } from "../deps.ts";
+import { BUILD_ID } from "../constants.ts";
 import { mappedPath, pageFrom } from "../mod.ts";
 import { Plugin, plugins } from "../plugin.ts";
 
@@ -64,7 +65,7 @@ export async function Parcel(props: ParcelProps) {
             return new Response(file.contents, {
               headers: {
                 "content-type": "application/javascript",
-                ...(isProd ? { "cache-control": "max-age=3600" } : {}),
+                ...(isProd() ? { "cache-control": "max-age=3600" } : {}),
               },
             });
           },
