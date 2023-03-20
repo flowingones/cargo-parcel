@@ -1,4 +1,4 @@
-import { join, parseArgs, walk } from "../deps.ts";
+import { join, parseArgs, walk } from "./deps.ts";
 import { createManifestDirectroy } from "./manifest.ts";
 
 type Island = [string, string];

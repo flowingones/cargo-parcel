@@ -1,4 +1,5 @@
-import { AST, parse, tag, VComponent, vNodeToString } from "./deps.ts";
+import { parse } from "std/path/mod.ts";
+import { AST, tag, VComponent, vNodeToString } from "./deps.ts";
 import { htmlAttributes } from "./html.ts";
 import { getHead, Head } from "./head.ts";
 import { bodyAttributes } from "./body.ts";

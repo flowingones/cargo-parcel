@@ -1,4 +1,4 @@
-import { dirname, join, parseArgs, walk } from "../deps.ts";
+import { dirname, join, parseArgs, walk } from "./deps.ts";
 import { createManifestDirectroy } from "./manifest.ts";
 
 interface FileImport {

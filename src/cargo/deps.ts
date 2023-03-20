@@ -1,10 +1,3 @@
-export {
-  dirname,
-  join,
-  parse,
-} from "https://deno.land/std@0.172.0/path/mod.ts";
-export { walk } from "https://deno.land/std@0.172.0/fs/mod.ts";
-export { parse as parseArgs } from "https://deno.land/std@0.172.0/flags/mod.ts";
 export { vNodeToString } from "../platform/server/mod.ts";
 export {
   AST,

@@ -1,4 +1,5 @@
-import { parse, VComponent, VElement, VNode, VType } from "./deps.ts";
+import { parse } from "std/path/mod.ts";
+import { VComponent, VElement, VNode, VType } from "./deps.ts";
 import { info } from "cargo/utils/mod.ts";
 
 export interface Island {
