@@ -71,7 +71,6 @@ export class Bundler {
     });
 
     this.files = files;
-    console.log(this.files);
     return;
   }
 
