@@ -69,7 +69,9 @@ export async function Parcel(props: ParcelProps) {
             return new Response(file, {
               headers: {
                 "Content-Type": "application/javascript",
-                ...(isProd() ? { "Cache-Control": "max-age=3600" } : {}),
+                ...(isProd()
+                  ? { "Cache-Control": "public, max-age=604800, immutable" }
+                  : {}),
               },
             });
           } else {
