@@ -1,7 +1,6 @@
 import { isProd } from "cargo/utils/environment.ts";
 import { parse } from "std/path/mod.ts";
-import { bundle } from "../bundle.ts";
-import { BUILD_ID } from "../constants.ts";
+import { Bundler, bundlerAssetRoute } from "../bundle.ts";
 import { mappedPath, pageFrom } from "../mod.ts";
 import { Plugin, plugins } from "../plugin.ts";
 
@@ -18,6 +17,12 @@ interface ParcelProps {
   pages: Record<string, Route>;
   islands?: Record<string, JSX.Component>;
   plugins?: Plugin[];
+}
+
+interface BundleHandlerProps {
+  params: {
+    fileName: string;
+  };
 }
 
 export async function Parcel(props: ParcelProps) {
@@ -48,28 +53,31 @@ export async function Parcel(props: ParcelProps) {
     }
   }
 
-  return async (app: any) => {
+  return (app: any) => {
     const router: any = app.getProtocol("http")?.router;
 
-    // Register bundle routes
+    // Setup JS bundling for frontend
     if (Object.keys(entryPoints).length) {
-      (await bundle({
-        entryPoints: entryPoints,
-      }))?.forEach((file) => {
-        router.add({
-          path: `/_parcel/${BUILD_ID}/${
-            parse(file.path).name.replaceAll("$", "")
-          }.js`,
-          method: "GET",
-          handler: () => {
-            return new Response(file.contents, {
+      const bundler = new Bundler(entryPoints);
+
+      router.add({
+        path: `${bundlerAssetRoute}/:fileName`,
+        method: "GET",
+        handler: async ({ params }: BundleHandlerProps) => {
+          const file = await bundler.resolve(params.fileName);
+          if (file instanceof Uint8Array) {
+            return new Response(file, {
               headers: {
                 "Content-Type": "application/javascript",
                 ...(isProd() ? { "Cache-Control": "max-age=3600" } : {}),
               },
             });
-          },
-        });
+          } else {
+            return new Response(null, {
+              status: 404,
+            });
+          }
+        },
       });
     }
 

@@ -1,41 +1,94 @@
-import { denoPlugin, esbuild } from "./deps.ts";
+import { parse } from "std/path/mod.ts";
 import { isProd } from "cargo/utils/environment.ts";
+import { denoPlugin, esbuild } from "./deps.ts";
+import { BUILD_ID } from "./mod.ts";
 
-interface BundleProps {
-  entryPoints: Record<string, string>;
+let isInitialized: boolean | Promise<void> = false;
+
+async function initialize() {
+  if (isInitialized === false) {
+    if (Deno.run === undefined) {
+      const wasmURL =
+        new URL("https://deno.land/x/esbuild@v0.17.0/esbuild.wasm").href;
+      isInitialized = fetch(wasmURL).then(async (r) => {
+        const resp = new Response(r.body, {
+          headers: { "Content-Type": "application/wasm" },
+        });
+        const wasmModule = await WebAssembly.compileStreaming(resp);
+        await esbuild.initialize({
+          wasmModule,
+          worker: false,
+        });
+      });
+    } else {
+      isInitialized = esbuild.initialize({});
+    }
+    await isInitialized;
+    isInitialized = true;
+  } else if (isInitialized instanceof Promise) {
+    await isInitialized;
+  }
 }
 
-let esbuildInit = false;
+export class Bundler {
+  private files:
+    | undefined
+    | Map<string, Uint8Array>
+    | Promise<void>;
 
-export async function bundle(props: BundleProps) {
-  if (Deno.run === undefined && !esbuildInit) {
-    await esbuild.initialize({
-      wasmURL: "https://deno.land/x/esbuild@v0.17.0/esbuild.wasm",
-      worker: false,
+  constructor(
+    private entryPoints: Record<string, string>,
+  ) {}
+
+  async bundle(): Promise<void> {
+    await initialize();
+
+    const result = await esbuild.build({
+      /*
+         * Supress error in esbuild 15.x
+         @ts-ignore */
+      plugins: [denoPlugin({
+        importMapURL: new URL("./import_map.json", `file://${Deno.cwd()}/`),
+      })],
+      entryPoints: this.entryPoints,
+      bundle: true,
+      format: "esm",
+      treeShaking: true,
+      splitting: true,
+      outdir: ".",
+      minify: isProd(),
+      platform: "neutral",
+      write: false,
+      jsxFactory: "tag",
+      absWorkingDir: Deno.cwd(),
+      target: ["chrome99", "firefox99", "safari15"],
     });
-    esbuildInit = true;
+
+    const files = new Map<string, Uint8Array>();
+
+    result.outputFiles?.forEach((file) => {
+      files.set(parse(file.path).base.replaceAll("$", ""), file.contents);
+    });
+
+    this.files = files;
+    console.log(this.files);
+    return;
   }
 
-  const result = await esbuild.build({
-    /*
-       * Supress error in esbuild 15.x
-       @ts-ignore */
-    plugins: [denoPlugin({
-      importMapURL: new URL("./import_map.json", `file://${Deno.cwd()}/`),
-    })],
-    entryPoints: props.entryPoints,
-    bundle: true,
-    format: "esm",
-    treeShaking: true,
-    splitting: true,
-    outdir: ".",
-    minify: isProd(),
-    platform: "neutral",
-    write: false,
-    jsxFactory: "tag",
-    absWorkingDir: Deno.cwd(),
-    target: ["chrome99", "firefox99", "safari15"],
-  });
+  async cache() {
+    if (typeof this.files === "undefined") {
+      this.files = this.bundle();
+    }
+    if (this.files instanceof Promise) {
+      await this.files;
+    }
 
-  return result.outputFiles;
+    return <Map<string, Uint8Array>> this.files;
+  }
+
+  async resolve(fileName: string): Promise<Uint8Array | undefined> {
+    return (await this.cache()).get(fileName);
+  }
 }
+
+export const bundlerAssetRoute = `/_parcel/${BUILD_ID}`;
