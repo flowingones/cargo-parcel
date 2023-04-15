@@ -1,4 +1,5 @@
 import { isProd } from "cargo/utils/environment.ts";
+import { Get, RequestContext } from "cargo/http/mod.ts";
 import { parse } from "std/path/mod.ts";
 import { Bundler, bundlerAssetRoute } from "../bundle.ts";
 import { mappedPath, pageFrom } from "../mod.ts";
@@ -17,12 +18,6 @@ interface ParcelProps {
   pages: Record<string, Route>;
   islands?: Record<string, JSX.Component>;
   plugins?: Plugin[];
-}
-
-interface BundleHandlerProps {
-  params: {
-    fileName: string;
-  };
 }
 
 export async function Parcel(props: ParcelProps) {
@@ -53,18 +48,15 @@ export async function Parcel(props: ParcelProps) {
     }
   }
 
-  return (app: any) => {
-    const router: any = app.getProtocol("http")?.router;
-
+  return () => {
     // Setup JS bundling for frontend
     if (Object.keys(entryPoints).length) {
       const bundler = new Bundler(entryPoints);
 
-      router.add({
-        path: `${bundlerAssetRoute}/:fileName`,
-        method: "GET",
-        handler: async ({ params }: BundleHandlerProps) => {
-          const file = await bundler.resolve(params.fileName);
+      Get(
+        `${bundlerAssetRoute}/:fileName`,
+        async ({ params }: RequestContext) => {
+          const file = await bundler.resolve(params!.fileName);
           if (file instanceof Uint8Array) {
             return new Response(file, {
               headers: {
@@ -80,7 +72,7 @@ export async function Parcel(props: ParcelProps) {
             });
           }
         },
-      });
+      );
     }
 
     for (const route in props.pages) {
@@ -91,10 +83,18 @@ export async function Parcel(props: ParcelProps) {
         },
       );
 
-      router.add({
-        path: mappedPath(route),
-        method: "GET",
-        handler: async (ctx: any) => {
+      Get(
+        mappedPath(route),
+        (ctx: RequestContext) => {
+          /*
+           * Sync render context starts here
+           */
+          if (tasks?.beforeRender?.length) {
+            for (const task of tasks.beforeRender) {
+              task({ ...ctx });
+            }
+          }
+
           let renderedPage = pageFrom({
             page,
             layouts,
@@ -105,9 +105,10 @@ export async function Parcel(props: ParcelProps) {
 
           if (tasks?.afterRender?.length) {
             for (const task of tasks.afterRender) {
-              renderedPage = await task({ pageHtml: renderedPage });
+              renderedPage = task({ pageHtml: renderedPage, ...ctx });
             }
           }
+          // Sync render context ends here
 
           return new Response(
             renderedPage,
@@ -118,7 +119,7 @@ export async function Parcel(props: ParcelProps) {
             },
           );
         },
-      });
+      );
     }
   };
 }
