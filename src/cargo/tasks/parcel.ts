@@ -88,8 +88,10 @@ export async function Parcel(props: ParcelProps) {
         },
       );
 
+      const path = mappedPath(route);
+
       Get(
-        mappedPath(route),
+        path.path,
         (ctx: PluginTaskContext) => {
           /*
            * Sync render context starts here
@@ -125,6 +127,7 @@ export async function Parcel(props: ParcelProps) {
           return new Response(
             renderedPage,
             {
+              status: path.statusCode,
               headers: {
                 "Content-Type": "text/html",
               },
