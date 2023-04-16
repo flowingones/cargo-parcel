@@ -3,7 +3,12 @@ import { Get, RequestContext } from "cargo/http/mod.ts";
 import { parse } from "std/path/mod.ts";
 import { Bundler, bundlerAssetRoute } from "../bundle.ts";
 import { mappedPath, pageFrom } from "../mod.ts";
-import { Plugin, plugins } from "../plugin.ts";
+import {
+  AfterRenderTaskContext,
+  Plugin,
+  plugins,
+  PluginTaskContext,
+} from "../plugin.ts";
 
 export interface Route {
   page: Page;
@@ -85,13 +90,16 @@ export async function Parcel(props: ParcelProps) {
 
       Get(
         mappedPath(route),
-        (ctx: RequestContext) => {
+        (ctx: PluginTaskContext) => {
           /*
            * Sync render context starts here
            */
           if (tasks?.beforeRender?.length) {
             for (const task of tasks.beforeRender) {
-              task({ ...ctx });
+              ctx = task({ ...ctx });
+            }
+            if (ctx.response) {
+              return ctx.response;
             }
           }
 
@@ -105,7 +113,11 @@ export async function Parcel(props: ParcelProps) {
 
           if (tasks?.afterRender?.length) {
             for (const task of tasks.afterRender) {
-              renderedPage = task({ pageHtml: renderedPage, ...ctx });
+              ctx = task({ pageHtml: renderedPage, ...ctx });
+            }
+            renderedPage = (<AfterRenderTaskContext> ctx).pageHtml;
+            if (ctx.response) {
+              return ctx.response;
             }
           }
           // Sync render context ends here

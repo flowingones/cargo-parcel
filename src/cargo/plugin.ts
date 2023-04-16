@@ -1,19 +1,21 @@
 import { log } from "cargo/utils/mod.ts";
 import { RequestContext } from "cargo/http/mod.ts";
 
-export type BeforeRenderTaskContext = RequestContext;
+export interface PluginTaskContext extends RequestContext {
+  response?: Response;
+}
 
 export type BeforeRenderTask = (
-  ctx: BeforeRenderTaskContext,
-) => void;
+  ctx: PluginTaskContext,
+) => PluginTaskContext;
 
-export interface AfterRenderTaskContext extends RequestContext {
+export interface AfterRenderTaskContext extends PluginTaskContext {
   pageHtml: string;
 }
 
 export type AfterRenderTask = (
   ctx: AfterRenderTaskContext,
-) => string;
+) => AfterRenderTaskContext;
 
 export interface PluginDefintions {
   scripts?: string[];
@@ -37,7 +39,6 @@ export async function plugins(plugins?: Plugin[]): Promise<PluginDefintions> {
 
   if (plugins?.length) {
     for (const plugin of plugins) {
-      log("Plugin", `${plugin.name} loaded!`);
       const pluginDefinition = await plugin.plugin();
       if (pluginDefinition.scripts) {
         scripts.push(...pluginDefinition.scripts);
@@ -51,6 +52,7 @@ export async function plugins(plugins?: Plugin[]): Promise<PluginDefintions> {
       if (pluginDefinition.tasks?.afterRender?.length) {
         afterRender.push(...pluginDefinition.tasks.afterRender);
       }
+      log("Plugin", `${plugin.name} loaded!`);
     }
   }
   return {
