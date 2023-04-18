@@ -38,7 +38,9 @@ export function pageFrom(props: PageFromProps) {
         ...scripts,
         `<script type="module">import { launch } from "/_parcel/${BUILD_ID}/main.js";
 ${
-          islands.map((island) =>
+          islands.filter((island, index, arr) => {
+            return arr.findIndex((i) => i.path === island.path) === index;
+          }).map((island) =>
             `import ${
               parse(island.path).name.replaceAll("-", "")
             } from "/_parcel/${BUILD_ID}/island-${
