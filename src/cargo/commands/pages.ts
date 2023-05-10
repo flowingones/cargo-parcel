@@ -1,5 +1,5 @@
 import { dirname, join, parseArgs, walk } from "./deps.ts";
-import { createManifestDirectroy } from "./manifest.ts";
+import { createManifestDirectory } from "./manifest.ts";
 
 interface FileImport {
   id: string;
@@ -10,11 +10,13 @@ interface FileImport {
 interface Page {
   page: FileImport;
   layouts: string[];
+  middleware: string[];
 }
 
 interface Manifest {
   pages: Page[];
   layouts: FileImport[];
+  middleware: FileImport[];
 }
 
 async function command(
@@ -32,13 +34,25 @@ async function command(
       }).map((layout) => {
         return layout.id;
       });
+
+      const middleware = data.middleware.filter((middleware) => {
+        return page.path.startsWith(middleware.path);
+      }).map((middleware) => {
+        return middleware.id;
+      });
+
       return {
         page,
         layouts,
+        middleware,
       };
     });
 
-    const manifest = { pages, layouts: data.layouts };
+    const manifest = {
+      pages,
+      layouts: data.layouts,
+      middleware: data.middleware,
+    };
 
     await write(basePath, manifest);
     return `Manifest ".pages.ts" sucessfully created!`;
@@ -53,15 +67,19 @@ async function command(
  */
 async function scan(
   basePath: string,
-): Promise<{ pages: FileImport[]; layouts: FileImport[] }> {
+): Promise<
+  { pages: FileImport[]; layouts: FileImport[]; middleware: FileImport[] }
+> {
   const pages: FileImport[] = [];
   const layouts: FileImport[] = [];
+  const middleware: FileImport[] = [];
   let layoutIndex = 0;
   let pageIndex = 0;
+  let middlewareIndex = 0;
 
   for await (
     const entry of walk(basePath, {
-      match: [/(page\.tsx)$/, /(layout\.tsx)$/],
+      match: [/(page\.tsx)$/, /(layout\.tsx)$/, /(middleware\.ts)$/],
     })
   ) {
     if (/\/(layout\.tsx)$/.exec(entry.path)?.length) {
@@ -80,11 +98,20 @@ async function scan(
       });
       pageIndex++;
     }
+    if (/\/(middleware\.ts)$/.exec(entry.path)?.length) {
+      middleware.push({
+        id: `M${middlewareIndex}`,
+        path: dirname(entry.path),
+        fileName: entry.name,
+      });
+      middlewareIndex++;
+    }
   }
 
   return {
     pages: sortImports(pages, basePath),
     layouts: sortImports(layouts),
+    middleware: sortImports(middleware),
   };
 }
 
@@ -98,12 +125,15 @@ ${imports(manifest.pages.map((page) => page.page))}
 // Layout imports
 ${imports(manifest.layouts)}
 
+// Middleware imports
+${imports(manifest.middleware)}
+
 export default {
   ${exports(basePath, manifest.pages)}
 };
 `;
 
-  await createManifestDirectroy();
+  await createManifestDirectory();
   await Deno.writeTextFile(join(".manifest", ".pages.ts"), content);
 }
 
@@ -118,6 +148,7 @@ function exports(path: string, pages: Page[]): string {
     return `"${page.page.path.replace(path, "") || "/"}": {
     page: ${page.page.id},
     layouts: [${page.layouts.join()}],
+    middleware: [${page.middleware.join()}]
   },`;
   }).join("\n  ");
 }

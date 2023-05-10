@@ -1,6 +1,6 @@
 import { parse } from "std/path/mod.ts";
 
-interface PathMapping {
+export interface PathMapping {
   path: string;
   statusCode: number;
 }

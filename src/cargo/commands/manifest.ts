@@ -1,4 +1,4 @@
-export async function createManifestDirectroy() {
+export async function createManifestDirectory() {
   try {
     await Deno.stat(".manifest");
   } catch (e) {
