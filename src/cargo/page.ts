@@ -7,8 +7,6 @@ import { Footer, footer, getFooter } from "./footer.ts";
 import { findIslands, type Island } from "./islands.ts";
 import { BUILD_ID } from "./constants.ts";
 
-export const cleanup: Array<() => void> = [];
-
 interface PageFromProps {
   page: JSX.Component;
   layouts?: JSX.Component[];
@@ -25,6 +23,7 @@ export function pageFrom(props: PageFromProps) {
     nestLayouts(
       tag(props.page, { params: props.params }, []),
       props.layouts,
+      props.params,
     ),
   );
 
@@ -93,10 +92,11 @@ function htmlFrom(props: HtmlFromProps) {
 function nestLayouts(
   page: JSX.Element,
   layouts?: JSX.Component[],
+  params?: Record<string, string>,
 ) {
   if (layouts?.length) {
     return layouts.reduce<JSX.Element>((accumulator, currentLayout) => {
-      return tag(currentLayout, null, [accumulator]);
+      return tag(currentLayout, params ?? null, [accumulator]);
     }, page);
   }
   return page;

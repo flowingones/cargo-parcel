@@ -1,5 +1,5 @@
 import { join, parseArgs, walk } from "./deps.ts";
-import { createManifestDirectroy } from "./manifest.ts";
+import { createManifestDirectory } from "./manifest.ts";
 
 type Island = [string, string];
 
@@ -32,7 +32,7 @@ async function write(islands: Island[]) {
 ${imports(islands)}
 ${exports(islands)}`;
 
-  await createManifestDirectroy();
+  await createManifestDirectory();
   await Deno.writeTextFile(join(".manifest", ".islands.ts"), content);
 
   return `Manifest ".islands.ts" sucessfully created!`;

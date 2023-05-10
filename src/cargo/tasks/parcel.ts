@@ -2,26 +2,23 @@ import { isProd } from "cargo/utils/environment.ts";
 import { Get, RequestContext } from "cargo/http/mod.ts";
 import { parse } from "std/path/mod.ts";
 import { Bundler, bundlerAssetRoute } from "../bundle.ts";
-import { mappedPath, pageFrom, Route } from "../mod.ts";
-import {
-  AfterRenderTaskContext,
-  Plugin,
-  plugins,
-  PluginTaskContext,
-} from "../plugin.ts";
-import { setRequest } from "../route.ts";
+import { mappedPath } from "../mod.ts";
+import { Plugin, plugins } from "../plugin.ts";
+import { PageHandler } from "../handler.ts";
+import { type Middleware } from "cargo/middleware/middleware.ts";
 
-export interface Route {
-  page: Page;
-  layouts: Page[];
+export interface PageRoute {
+  page: Renderable;
+  layouts: Renderable[];
+  middleware: { default: Middleware[] }[];
 }
 
-export interface Page {
+export interface Renderable {
   default: JSX.Component;
 }
 
 interface ParcelProps {
-  pages: Record<string, Route>;
+  pages: Record<string, PageRoute>;
   islands?: Record<string, JSX.Component>;
   plugins?: Plugin[];
 }
@@ -89,54 +86,25 @@ export async function Parcel(props: ParcelProps) {
         },
       );
 
+      const middleware = props.pages[route].middleware.map(
+        (module) => {
+          return module.default;
+        },
+      ).flat();
+
       const path = mappedPath(route);
 
       Get(
         path.path,
-        (ctx: PluginTaskContext) => {
-          /*
-           * Sync render context starts here
-           */
-          setRequest(ctx.request);
-          if (tasks?.beforeRender?.length) {
-            for (const task of tasks.beforeRender) {
-              ctx = task({ ...ctx });
-            }
-            if (ctx.response) {
-              return ctx.response;
-            }
-          }
-
-          let renderedPage = pageFrom({
-            page,
-            layouts,
-            islands: props.islands,
-            scripts,
-            params: ctx.params,
-          });
-
-          if (tasks?.afterRender?.length) {
-            for (const task of tasks.afterRender) {
-              ctx = task({ pageHtml: renderedPage, ...ctx });
-            }
-            renderedPage = (<AfterRenderTaskContext> ctx).pageHtml;
-            if (ctx.response) {
-              return ctx.response;
-            }
-          }
-          setRequest(undefined);
-          // Sync render context ends here
-
-          return new Response(
-            renderedPage,
-            {
-              status: path.statusCode,
-              headers: {
-                "Content-Type": "text/html",
-              },
-            },
-          );
-        },
+        new PageHandler({
+          page,
+          layouts,
+          islands: props.islands,
+          middleware,
+          scripts,
+          tasks,
+          statusCode: path.statusCode,
+        }).handle(),
       );
     }
   };
