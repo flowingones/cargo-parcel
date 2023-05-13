@@ -12,7 +12,7 @@ interface PageFromProps {
   layouts?: JSX.Component[];
   islands?: Record<string, JSX.Component>;
   scripts?: string[];
-  params?: Record<string, string>;
+  params?: Record<string, string | undefined>;
 }
 
 export function pageFrom(props: PageFromProps) {
@@ -92,7 +92,7 @@ function htmlFrom(props: HtmlFromProps) {
 function nestLayouts(
   page: JSX.Element,
   layouts?: JSX.Component[],
-  params?: Record<string, string>,
+  params?: Record<string, string | undefined>,
 ) {
   if (layouts?.length) {
     return layouts.reduce<JSX.Element>((accumulator, currentLayout) => {
