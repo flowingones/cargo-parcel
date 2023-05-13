@@ -59,7 +59,7 @@ export async function Parcel(props: ParcelProps) {
       Get(
         `${bundlerAssetRoute}/:fileName`,
         async ({ params }: RequestContext) => {
-          const file = await bundler.resolve(params!.fileName);
+          const file = await bundler.resolve(params!.fileName!);
           if (file instanceof Uint8Array) {
             return new Response(file, {
               headers: {
