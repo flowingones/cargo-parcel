@@ -1,13 +1,13 @@
-let _request: Request | undefined;
+import { context } from "./context.ts";
 
 function url(): URL {
   assertRequestScope();
-  return new URL(_request?.url || window.location.href);
+  return new URL(context()?.request?.url || window.location.href);
 }
 
 function navigate(url: string) {
   assertRequestScope();
-  if (_request) {
+  if (context()?.request) {
     throw Error("Not allowed to navigate on the server side");
   }
 
@@ -15,7 +15,7 @@ function navigate(url: string) {
 }
 
 function assertRequestScope() {
-  if (!_request && !window.location) {
+  if (!context()?.request && !window.location) {
     throw Error("Scope for the route could not be found");
   }
 }
@@ -24,7 +24,3 @@ export const Route = {
   url,
   navigate,
 };
-
-export function setRequest(request: Request | undefined): void {
-  _request = request;
-}

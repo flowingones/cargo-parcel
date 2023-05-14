@@ -4,7 +4,7 @@ import { parse } from "std/path/mod.ts";
 import { Bundler, bundlerAssetRoute } from "../bundle.ts";
 import { mappedPath } from "../mod.ts";
 import { Plugin, plugins } from "../plugin.ts";
-import { PageHandler } from "../handler.ts";
+import { PageHandler } from "../page/handler.ts";
 import { type Middleware } from "cargo/middleware/middleware.ts";
 
 export interface PageRoute {
