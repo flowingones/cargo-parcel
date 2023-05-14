@@ -7,8 +7,8 @@ import type {
   AfterRenderTaskContext,
   PluginDefintions,
   PluginTaskContext,
-} from "./plugin.ts";
-import { setRequest } from "./route.ts";
+} from "../plugin.ts";
+import { setContext } from "../context.ts";
 
 export interface PageHandlerProps {
   page: JSX.Component;
@@ -36,7 +36,7 @@ export class PageHandler {
           /*
            * START SYNC RENDER CONTEXT
            */
-          setRequest(ctx.request);
+          setContext(ctx);
           if (this.#props.tasks?.beforeRender?.length) {
             for (const task of this.#props.tasks.beforeRender) {
               ctx = task({ ...ctx });
@@ -63,7 +63,7 @@ export class PageHandler {
               return ctx.response;
             }
           }
-          setRequest(undefined);
+          setContext(undefined);
           /*
            * END SYNC RENDER CONTEXT
            */
