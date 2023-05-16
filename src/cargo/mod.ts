@@ -1,6 +1,6 @@
 export { Bundler, bundlerAssetRoute } from "./bundle.ts";
 export { BUILD_ID } from "./constants.ts";
-export { context, setContext } from "./context.ts";
+export { getRequest, getServerContext, setServerContext } from "./context.ts";
 export { findIslands, type Island } from "./islands.ts";
 export { mappedPath } from "./path-mapping.ts";
 export {
