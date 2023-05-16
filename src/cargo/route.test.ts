@@ -1,6 +1,6 @@
 import { Route } from "./mod.ts";
 import { assertEquals, assertThrows } from "std/testing/asserts.ts";
-import { setContext } from "./context.ts";
+import { setServerContext } from "./context.ts";
 Deno.test("Route", async (t) => {
   await t.step("should throw scope error (url)", () => {
     assertThrows(
@@ -8,20 +8,11 @@ Deno.test("Route", async (t) => {
         Route.url();
       },
       Error,
-      "Request Context not set!",
-    );
-  });
-  await t.step("should throw scope error (navigate)", () => {
-    assertThrows(
-      () => {
-        Route.navigate("https://cargo.wtf/en");
-      },
-      Error,
-      "Request Context not set!",
+      "No request scope found!",
     );
   });
   await t.step("should throw server side error (navigate)", () => {
-    setContext({ request: new Request("https://cargo.wtf") } as any);
+    setServerContext({ request: new Request("https://cargo.wtf") } as any);
     assertThrows(
       () => {
         Route.navigate("https://cargo.wtf/en");
@@ -29,13 +20,13 @@ Deno.test("Route", async (t) => {
       Error,
       "Not allowed to navigate on the server side",
     );
-    setContext(undefined);
+    setServerContext(undefined);
   });
   await t.step("should return href of request", () => {
-    setContext({ request: new Request("https://cargo.wtf") } as any);
+    setServerContext({ request: new Request("https://cargo.wtf") } as any);
     assertEquals(Route.url().href, "https://cargo.wtf/");
-    setContext({ request: new Request("https://cargo.wtf/en") } as any);
+    setServerContext({ request: new Request("https://cargo.wtf/en") } as any);
     assertEquals(Route.url().href, "https://cargo.wtf/en");
-    setContext(undefined);
+    setServerContext(undefined);
   });
 });
