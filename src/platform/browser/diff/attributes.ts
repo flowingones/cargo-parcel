@@ -40,6 +40,12 @@ function createOrUpdate({ vNode, name, value }: CreateAttributePayload) {
   ) {
     (<HTMLFormElement> vNode.nodeRef)[name] = value;
   }
+  if (name === "value") {
+    (<HTMLFormElement> vNode.nodeRef)[name] = `${value}`;
+  }
+  if (name === "unsafeInnerHTML") {
+    return (<HTMLFormElement> vNode.nodeRef).innerHTML = `${value}`;
+  }
   (<HTMLElement> vNode.nodeRef).setAttribute(
     name,
     `${value}`,
@@ -49,6 +55,9 @@ function createOrUpdate({ vNode, name, value }: CreateAttributePayload) {
 function remove({ name, vNode }: DeleteAttributePayload) {
   if (name === "checked") {
     (<HTMLFormElement> vNode.nodeRef)[name] = false;
+  }
+  if (name === "value") {
+    (<HTMLFormElement> vNode.nodeRef).value = "";
   }
   (<HTMLElement> (<VNodeRef<Node>> vNode).nodeRef).removeAttribute(
     name,
