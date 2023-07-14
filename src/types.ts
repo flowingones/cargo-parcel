@@ -18,6 +18,7 @@ declare global {
 
     type ElementProps = {
       children?: Node[];
+      unsafeInnerHTML?: string;
       [type: string]: unknown;
     };
 
