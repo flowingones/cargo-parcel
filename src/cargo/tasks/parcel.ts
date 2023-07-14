@@ -1,27 +1,35 @@
 import { isProd } from "cargo/utils/environment.ts";
 import { Get, RequestContext } from "cargo/http/mod.ts";
 import { parse } from "std/path/mod.ts";
-import { Bundler, bundlerAssetRoute } from "../bundle.ts";
+import { Bundler, BUNDLER_PUBLIC_ROUTE } from "../bundle.ts";
 import { mappedPath } from "../mod.ts";
 import { Plugin, plugins } from "../plugin.ts";
 import { PageHandler } from "../page/handler.ts";
 import { type Middleware } from "cargo/middleware/middleware.ts";
 
-export interface PageRoute {
+export type PageRoute = {
   page: Renderable;
   layouts: Renderable[];
   middleware: { default: Middleware[] }[];
+};
+
+type Renderable = {
+  default: PageLike;
+};
+
+export interface PageLikeProps<T = undefined> extends JSX.ElementProps {
+  params: Record<string, string>;
+  data: T;
 }
 
-export interface Renderable {
-  default: JSX.Component;
-}
+// deno-lint-ignore no-explicit-any
+export type PageLike = (props: PageLikeProps<any>) => JSX.Element;
 
-interface ParcelProps {
+type ParcelProps = {
   pages: Record<string, PageRoute>;
   islands?: Record<string, JSX.Component>;
   plugins?: Plugin[];
-}
+};
 
 export async function Parcel(props: ParcelProps) {
   const entryPoints: Record<string, string> = {};
@@ -57,7 +65,7 @@ export async function Parcel(props: ParcelProps) {
       const bundler = new Bundler(entryPoints);
 
       Get(
-        `${bundlerAssetRoute}/:fileName`,
+        `${BUNDLER_PUBLIC_ROUTE}/:fileName`,
         async ({ params }: RequestContext) => {
           const file = await bundler.resolve(params!.fileName!);
           if (file instanceof Uint8Array) {
@@ -79,8 +87,8 @@ export async function Parcel(props: ParcelProps) {
     }
 
     for (const route in props.pages) {
-      const page: JSX.Component = props.pages[route].page.default;
-      const layouts: JSX.Component[] = props.pages[route].layouts.map(
+      const page: PageLike = props.pages[route].page.default;
+      const layouts: PageLike[] = props.pages[route].layouts.map(
         (layout) => {
           return layout.default;
         },
