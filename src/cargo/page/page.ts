@@ -6,13 +6,15 @@ import { bodyAttributes } from "./body.ts";
 import { Footer, footer, getFooter } from "./footer.ts";
 import { findIslands, type Island } from "../islands.ts";
 import { BUILD_ID } from "../constants.ts";
+import { PageLike } from "../tasks/parcel.ts";
 
 interface PageFromProps {
-  page: JSX.Component;
-  layouts?: JSX.Component[];
+  page: PageLike;
+  layouts?: PageLike[];
   islands?: Record<string, JSX.Component>;
   scripts?: string[];
-  params?: Record<string, string | undefined>;
+  params: Record<string, string | undefined>;
+  data: unknown;
 }
 
 export function pageFrom(props: PageFromProps) {
@@ -21,9 +23,14 @@ export function pageFrom(props: PageFromProps) {
 
   const vNode = <VComponent<unknown>> AST.create(
     nestLayouts(
-      tag(props.page, { params: props.params }, []),
+      tag(
+        <JSX.Component> props.page,
+        { params: props.params, data: props.data },
+        [],
+      ),
       props.layouts,
       props.params,
+      props.data,
     ),
   );
 
@@ -91,12 +98,16 @@ function htmlFrom(props: HtmlFromProps) {
 
 function nestLayouts(
   page: JSX.Element,
-  layouts?: JSX.Component[],
+  layouts?: PageLike[],
   params?: Record<string, string | undefined>,
+  data?: unknown,
 ) {
   if (layouts?.length) {
     return layouts.reduce<JSX.Element>((accumulator, currentLayout) => {
-      return tag(currentLayout, params ?? null, [accumulator]);
+      return tag(<JSX.Component> currentLayout, {
+        params,
+        data,
+      }, [accumulator]);
     }, page);
   }
   return page;

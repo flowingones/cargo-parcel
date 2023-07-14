@@ -9,10 +9,11 @@ import type {
   PluginTaskContext,
 } from "../plugin.ts";
 import { setServerContext } from "../context.ts";
+import { PageLike } from "../tasks/parcel.ts";
 
 export interface PageHandlerProps {
-  page: JSX.Component;
-  layouts: JSX.Component[];
+  page: PageLike;
+  layouts: PageLike[];
   islands?: Record<string, JSX.Component>;
   scripts?: string[];
   middleware: Middleware[];
@@ -51,7 +52,8 @@ export class PageHandler {
             layouts: this.#props.layouts,
             islands: this.#props.islands,
             scripts: this.#props.scripts,
-            params: ctx.params,
+            params: ctx.params ?? {},
+            data: ctx.data ?? {},
           });
 
           if (this.#props.tasks?.afterRender?.length) {
