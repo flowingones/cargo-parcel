@@ -89,4 +89,8 @@ export class Bundler {
   }
 }
 
+/**
+ * @deprecated use "BUNDLER_ASSET_ROUTE" instead.
+ */
 export const bundlerAssetRoute = `/_parcel/${BUILD_ID}`;
+export const BUNDLER_PUBLIC_ROUTE = `/_parcel/${BUILD_ID}`;
