@@ -34,21 +34,16 @@ export function renderToString(
 function stringify<T>(vNode: VNode<T>): string {
   if (!vNode) return "";
 
-  if (
-    vNode.type === VType.TEXT
-  ) {
-    return escapeHtml((<VText<T>> vNode).text.toString());
+  switch (vNode.type) {
+    case VType.TEXT:
+      return escapeHtml((<VText<T>> vNode).text.toString());
+    case VType.ELEMENT:
+      return elementToString(<VElement<T>> vNode);
+    case VType.COMPONENT:
+      return stringify(<VComponent<T>> vNode.ast);
+    default:
+      throw Error("Node type is not supported!");
   }
-
-  if (vNode.type === VType.ELEMENT) {
-    return elementToString(<VElement<T>> vNode);
-  }
-
-  if (vNode.type === VType.COMPONENT) {
-    return stringify(<VComponent<T>> vNode.ast);
-  }
-
-  throw Error("Node type is not supported!");
 }
 
 function elementToString<T>(vNode: VElement<T>): string {
@@ -57,7 +52,13 @@ function elementToString<T>(vNode: VElement<T>): string {
   }
 
   const { props, children } = vNode;
-  return `<${vNode.tag}${stringFrom(props)}>${
+  const { unsafeInnerHTML, ...attributes } = props;
+  if (unsafeInnerHTML) {
+    return `<${vNode.tag}${
+      stringFrom(attributes)
+    }>${unsafeInnerHTML}</${vNode.tag}>`;
+  }
+  return `<${vNode.tag}${stringFrom(attributes)}>${
     children?.map((child) => stringify(child)).join("")
   }</${vNode.tag}>`;
 }
