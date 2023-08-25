@@ -1,7 +1,7 @@
 {
   "imports": {
-    "std/": "https://deno.land/std@0.194.0/",
-    "cargo/": "https://deno.land/x/cargo@0.1.52/",
-    "inspect/": "https://deno.land/x/cargo_inspect@0.1.52/"
+    "std/": "https://deno.land/std@0.200.0/",
+    "cargo/": "https://deno.land/x/cargo@0.1.56/",
+    "inspect/": "https://deno.land/x/cargo_inspect@0.1.56/"
   }
 }

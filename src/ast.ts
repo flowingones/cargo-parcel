@@ -1,3 +1,9 @@
+import {
+  clearSubscriber,
+  setSubscriber,
+  type Subscriber,
+  Unsubscribe,
+} from "./state/mod.ts";
 import "./types.ts";
 
 export const scope: VComponent<unknown>[] = [];
@@ -12,6 +18,8 @@ export enum VType {
   ELEMENT,
   COMPONENT,
 }
+
+export type VState = JSX.StateLike;
 
 export interface ElementProps<T> {
   [key: string]: unknown;
@@ -42,7 +50,7 @@ export interface VElement<T> extends VNodeRef<T> {
 
 export interface VText<T> extends VNodeRef<T> {
   type: VType.TEXT;
-  text: string;
+  text: string | VState;
 }
 
 export interface VComponent<T> extends VBase {
@@ -52,6 +60,7 @@ export interface VComponent<T> extends VBase {
   fn: (props: JSX.ElementProps) => JSX.Element;
   props: JSX.ElementProps;
   ast: VNode<T>;
+  unsubs: Unsubscribe[];
 }
 
 export type VNode<T> =
@@ -61,41 +70,51 @@ export type VNode<T> =
   | undefined
   | null;
 
-function create<T>(node: JSX.Node): VNode<T> {
-  if (!node) return;
+type VComponentUpdater<T, V> = (component: VComponent<T>) => Subscriber<V>;
 
-  if (typeof node === "string" || typeof node === "number") {
-    return text(node);
+let vComponentUpdater: VComponentUpdater<unknown, unknown> | undefined;
+
+export function setComponentUpdater(
+  updater: VComponentUpdater<unknown, unknown>,
+): void {
+  vComponentUpdater = updater;
+}
+
+export function from<T>(node: JSX.Node | VComponent<T>): VNode<T> {
+  if (node == null) return;
+
+  if (isTextNode(node)) {
+    return vText(node);
   }
 
-  if (typeof node.tag === "string") {
-    return element(node);
+  if ("tag" in node && typeof node.tag === "string") {
+    return vElement(node);
   }
 
-  if (typeof node.tag === "function") {
-    return component(node);
+  if (("tag" in node && typeof node.tag === "function")) {
+    return createVComponent(node);
+  }
+
+  if (
+    ("fn" in node && typeof node.fn === "function")
+  ) {
+    return updateVComponent(node);
   }
 }
 
-function update<T>(vNode: VNode<T>) {
-  if (!vNode) {
-    return;
-  }
-  if (vNode.type === VType.COMPONENT) {
-    return component(vNode);
-  }
-  throw Error(`VNode with type of "${vNode.type}" is not supported.`);
+export function update<T>(vNode: VComponent<T>) {
+  return from(vNode);
 }
 
-function text<T>(text: string): VText<T> {
+function vText<T>(node: string | number | JSX.StateLike): VText<T> {
   return {
     type: VType.TEXT,
-    text: `${text}`,
+    text: (typeof node === "object" && "get" in node) ? node : `${node}`,
     eventRefs: [],
   };
 }
 
-function element<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
+function vElement<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
   const { tag, children, eventRefs, props, ...rest } = node;
 
   return {
@@ -104,25 +123,15 @@ function element<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
     props: <ElementProps<T>> props,
     eventRefs: eventRefs,
     children: children?.map((child, i) => {
-      if (typeof child === "number") {
-        child = `${child}`;
-      }
       return vNode
         ? track(child, vNode.children ? vNode.children[i] : undefined)
-        : create(child);
+        : from(child);
     }),
     ...rest,
   };
 }
 
-function component<T>(node: JSX.Element | VComponent<T>): VNode<T> {
-  if ("fn" in node && typeof node.fn === "function") {
-    return updateComponent(node);
-  }
-  return createComponent(<JSX.Element> node);
-}
-
-function createComponent<T>(node: JSX.Element) {
+function createVComponent<T>(node: JSX.Element) {
   if (typeof node.tag !== "function") {
     throw new Error(
       "Component is not a function",
@@ -136,22 +145,25 @@ function createComponent<T>(node: JSX.Element) {
   const component: VComponent<T> = {
     type: VType.COMPONENT,
     ast: undefined,
-    id: Symbol("Parcel Component ID"),
+    id: Symbol(),
     mode: VMode.NotCreated,
     fn: tag,
+    unsubs: [],
     props,
   };
 
   scope.push(component);
-  component.ast = create(component.fn(props));
+  setSubscriber(vComponentUpdater ? vComponentUpdater(component) : undefined);
+  component.ast = from(component.fn(props));
   component.mode = VMode.Created;
+  clearSubscriber();
   scope.shift();
 
   return component;
 }
 
-function updateComponent<T>(vComponent: VComponent<T>) {
-  const { type, id, mode, fn, ast, props, ...rest } = vComponent;
+function updateVComponent<T>(vComponent: VComponent<T>) {
+  const { type, id, mode, fn, ast, props, unsubs, ...rest } = vComponent;
 
   const updatedVComponent: VComponent<T> = {
     type,
@@ -160,11 +172,17 @@ function updateComponent<T>(vComponent: VComponent<T>) {
     fn,
     ast: undefined,
     props,
+    unsubs: [],
     ...rest,
   };
 
   scope.push(updatedVComponent);
+  unsubs.forEach((unsub) => unsub());
+  setSubscriber(
+    vComponentUpdater ? vComponentUpdater(updatedVComponent) : undefined,
+  );
   const node = fn(props);
+  clearSubscriber();
   scope.shift();
 
   updatedVComponent.ast = track(node, ast);
@@ -172,17 +190,17 @@ function updateComponent<T>(vComponent: VComponent<T>) {
 }
 
 function track<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
-  if (!node) return;
+  if (node == null) return;
 
-  if (typeof node === "string" || typeof node === "number") {
-    return text(node);
+  if (isTextNode(node)) {
+    return vText(node);
   }
 
   if (typeof node.tag === "string") {
     if (vNode?.type === VType.ELEMENT && node.tag === vNode.tag) {
-      return element(node, vNode);
+      return vElement(node, vNode);
     }
-    return element(node);
+    return vElement(node);
   }
 
   if (typeof node.tag === "function") {
@@ -190,13 +208,21 @@ function track<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
       const { children, props } = node;
       props.children = children;
       vNode.props = props;
-      return component(vNode);
+      return updateVComponent(vNode);
     }
-    return component(node);
+    return createVComponent(node);
   }
 }
 
-export const AST = {
-  create,
-  update,
-};
+// TODO: Move type-guard to appropriate location
+function isTextNode(
+  value: unknown,
+): value is string | number | JSX.StateLike {
+  return (
+    value != null && (
+      typeof value === "string" ||
+      (Number.isFinite(value)) ||
+      (typeof value === "object" && "get" in value)
+    )
+  );
+}

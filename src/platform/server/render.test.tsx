@@ -12,12 +12,12 @@ function Headline(props: JSX.ElementProps) {
 }
 
 Deno.test(
-  "Platform Server:",
+  renderToString.name,
   async (t) => {
     await t.step("should render headline component with text", () => {
       assertEquals(
-        renderToString(<Headline>Hello</Headline>),
-        "<h1>Hello</h1>",
+        renderToString(<Headline>Hello {"World"}!</Headline>),
+        "<h1>Hello World!</h1>",
       );
     });
 

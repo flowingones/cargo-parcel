@@ -1,8 +1,9 @@
 // Cargo Parcel – Version 0.1.89
 export { tag } from "./tag.ts";
 export {
-  AST,
+  from,
   scope,
+  setComponentUpdater,
   type VBase,
   type VComponent,
   type VElement,
@@ -10,6 +11,7 @@ export {
   VMode,
   type VNode,
   type VNodeRef,
+  type VState,
   type VText,
   VType,
 } from "./ast.ts";

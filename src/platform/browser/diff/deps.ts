@@ -5,6 +5,7 @@ export {
   type VHooks,
   type VNode,
   type VNodeRef,
+  type VState,
   type VText,
   VType,
 } from "../../../mod.ts";

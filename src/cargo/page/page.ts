@@ -1,5 +1,5 @@
 import { parse } from "std/path/mod.ts";
-import { AST, tag, VComponent, vNodeToString } from "../deps.ts";
+import { from, tag, VComponent, vNodeToString } from "../deps.ts";
 import { htmlAttributes } from "./html.ts";
 import { getHead, Head } from "./head.ts";
 import { bodyAttributes } from "./body.ts";
@@ -21,7 +21,7 @@ export function pageFrom(props: PageFromProps) {
   let islands: Island[] = [];
   const scripts = props.scripts || [];
 
-  const vNode = <VComponent<unknown>> AST.create(
+  const vNode = <VComponent<unknown>> from(
     nestLayouts(
       tag(
         <JSX.Component> props.page,

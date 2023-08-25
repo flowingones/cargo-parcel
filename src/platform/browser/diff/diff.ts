@@ -1,12 +1,15 @@
 import { VElement, VHooks, VNode, VText, VType } from "./deps.ts";
 
 import {
+  Action,
   type ChangeSet,
   hydrate,
+  Props,
   render,
   toBeHydrated,
   toBeRendered,
   toBeUpdated,
+  Type,
   update,
 } from "./mod.ts";
 
@@ -61,18 +64,18 @@ export function diff(
   ) {
     if (previousVNode?.type === VType.TEXT) {
       return [{
-        type: "text",
-        action: "delete",
-        payload: {
+        [Props.Type]: Type.Text,
+        [Props.Action]: Action.Delete,
+        [Props.Payload]: {
           vNode: previousVNode,
         },
       }];
     }
     if (previousVNode?.type === VType.ELEMENT) {
       return [{
-        type: "element",
-        action: "delete",
-        payload: {
+        [Props.Type]: Type.Element,
+        [Props.Action]: Action.Delete,
+        [Props.Payload]: {
           parentVNode,
           vNode: previousVNode,
         },

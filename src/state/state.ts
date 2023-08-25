@@ -1,70 +1,66 @@
-import { VMode } from "../mod.ts";
-import { scope, VComponent } from "./deps.ts";
-import { cycle } from "./mod.ts";
-
-export interface VStateComponent<T> extends VComponent<unknown> {
-  state?: State<T>[];
+export enum SubscriberProps {
+  update,
+  unsubscribeCallback,
 }
 
-export type State<T> = [
-  value: T,
-  setter: (value: T) => void,
-  componentId: symbol,
-];
+export interface Subscriber<T> {
+  update: (value: T) => void;
+  unsubscribeCallback?: (unsubscribe: Unsubscribe) => void;
+}
 
-const stateCache: State<unknown>[] = [];
+export type Unsubscribe = () => void;
 
-export function state<T>(value: T): State<T> {
-  if (!scope.length) {
-    throw Error("State could neither be created nor returned!");
+let subscriber: Subscriber<unknown> | undefined;
+
+export function setSubscriber(newSubscriber: Subscriber<unknown> | undefined) {
+  subscriber = newSubscriber;
+}
+
+export function clearSubscriber() {
+  subscriber = undefined;
+}
+
+export class State<T> {
+  #value: T;
+  #subscribers: Subscriber<T>[] = [];
+
+  constructor(value: T) {
+    this.#value = value;
   }
 
-  const vComponent: VStateComponent<T> = scope[scope.length - 1];
-
-  // If state is left in the current VComponent scope return it.
-  if (stateCache.length) {
-    if (stateCache[stateCache.length - 1][2] === vComponent.id) {
-      const current: State<T> = returnState();
-      vComponent.state?.push(current);
-      return current;
+  get get() {
+    if (subscriber) {
+      this.subscribe(<Subscriber<T>> subscriber);
     }
-    // If VComponent has different id reset the state cache
-    stateCache.length = 0;
+    console.log(subscriber);
+    return this.#value;
   }
 
-  // If VComponent is created and has state return VComponent state
-  if (vComponent.mode === VMode.Created && vComponent.state?.length) {
-    stateCache.push(...<State<unknown>[]> vComponent.state);
-    vComponent.state = [];
-    const current: State<T> = returnState();
-    vComponent.state.push(current);
-    return current;
+  set(value: T) {
+    this.#value = value;
+    this.#track();
   }
 
-  // Return new state
-  return createsState(value, vComponent);
-}
+  subscribe(subscriber: Subscriber<T>): Unsubscribe {
+    if (!this.#subscribers.find((existing) => existing === subscriber)) {
+      this.#subscribers.push(subscriber);
+      subscriber.unsubscribeCallback?.call(this, () => {
+        this.#subscribers = this.#subscribers.filter((existing) =>
+          existing !== subscriber
+        );
+      });
+    }
 
-function createsState<T>(value: T, vComponent: VStateComponent<T>): State<T> {
-  // Create new state with reference to vComponent
-  const newState: State<T> = [
-    value,
-    (newValue) => {
-      newState[0] = newValue;
-      cycle();
-    },
-    vComponent.id,
-  ];
-
-  // Add state to the component
-  if (Array.isArray(vComponent.state)) {
-    vComponent.state.push(newState);
-  } else {
-    vComponent.state = [newState];
+    return () => {
+      this.#subscribers = this.#subscribers.filter((existing) =>
+        existing === subscriber
+      );
+    };
   }
-  return newState;
-}
 
-function returnState<T>(): State<T> {
-  return <State<T>> stateCache.shift();
+  #track() {
+    this.#subscribers?.forEach((subscriber) => {
+      subscriber.update(this.#value);
+    });
+  }
 }

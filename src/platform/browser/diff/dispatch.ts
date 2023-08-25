@@ -9,33 +9,48 @@ import {
   TextChangeSet,
 } from "./mod.ts";
 
-type Action = "create" | "update" | "delete" | string;
-type Type = "element" | "event" | "attribute" | "text" | string;
+export enum Action {
+  Create,
+  Update,
+  Attach,
+  Replace,
+  Delete,
+}
+export enum Type {
+  Element,
+  Event,
+  Attribute,
+  Text,
+}
+
+export enum Props {
+  Type,
+  Action,
+  Payload,
+}
 
 export interface ChangeSet<T> {
-  action: Action;
-  type: Type;
-  payload: T;
+  [Props.Type]: Type;
+  [Props.Action]: Action;
+  [Props.Payload]: T;
 }
 
-function dispatch(change: ChangeSet<unknown>) {
-  if (change.type === "attribute") {
-    attribute(<AttributeChangeSet> change);
-  }
-  if (change.type === "event") {
-    event(<EventChangeSet> change);
-  }
-  if (change.type === "element") {
-    element(<ElementChangeSet> change);
-  }
-  if (change.type === "text") {
-    text(<TextChangeSet> change);
+function change(changeSet: ChangeSet<unknown>) {
+  switch (changeSet[Props.Type]) {
+    case Type.Attribute:
+      return attribute(<AttributeChangeSet> changeSet);
+    case Type.Event:
+      return event(<EventChangeSet> changeSet);
+    case Type.Element:
+      return element(<ElementChangeSet> changeSet);
+    case Type.Text:
+      return text(<TextChangeSet> changeSet);
   }
 }
 
-export function flush(changes: ChangeSet<unknown>[]) {
+export function dispatch(changes: ChangeSet<unknown>[]) {
   while (changes.length) {
-    const change = changes.shift();
-    if (change) dispatch(change);
+    const changeSet = changes.shift();
+    if (changeSet) change(changeSet);
   }
 }

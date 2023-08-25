@@ -2,12 +2,13 @@
 /// <reference lib="DOM" />
 /// <reference lib="deno.ns" />
 
+import { SubscriberProps, Unsubscribe } from "../../state/mod.ts";
 import { tag } from "../../tag.ts";
 import {
-  AST,
   diff,
-  flush,
-  listener,
+  dispatch,
+  from,
+  setComponentUpdater,
   VComponent,
   VElement,
   VNode,
@@ -19,24 +20,34 @@ interface Island {
   props: Record<string, unknown>;
 }
 
-function sync(node: Node, vNode: VNode<Node>) {
-  // Register the listener to trigger re-rendering
-  listener(() => {
-    const previousVNode = vNode;
-    vNode = AST.update(vNode);
-    const changeSet = diff({ vNode, previousVNode });
-    flush(changeSet);
-  });
-
+function init(node: Node, vNode: VNode<Node>) {
   const changeSet = diff({ node, vNode });
-  flush(changeSet);
+  dispatch(changeSet);
 }
 
 export function launch(islands: Island[]) {
+  setComponentUpdater((vComponent: VComponent<unknown>) => {
+    return {
+      update: () => {
+        const vNode = <VComponent<Node>> from(vComponent);
+        const changeSet = diff({
+          vNode,
+          previousVNode: <VComponent<Node>> vComponent,
+        });
+        vComponent.ast = vNode.ast;
+
+        dispatch(changeSet);
+      },
+      unsubscribeCallback: (unsubscribe: Unsubscribe) => {
+        vComponent.unsubs.push(unsubscribe);
+      },
+    };
+  });
+
   for (const island of islands) {
     const node = document.querySelector(`.${island.class}`);
     if (node) {
-      const vNode = <VComponent<Node>> AST.create<Node>(
+      const vNode = <VComponent<Node>> from<Node>(
         tag(island.node, island.props, []),
       );
       typeof (<VElement<Node>> vNode.ast).props.class === "string"
@@ -44,7 +55,7 @@ export function launch(islands: Island[]) {
           (<VElement<Node>> vNode.ast).props.class
         } ${island.class}`
         : (<VElement<Node>> vNode.ast).props.class = island.class;
-      sync(node, vNode);
+      init(node, vNode);
     }
   }
 }

@@ -1,6 +1,6 @@
 export { vNodeToString } from "../platform/server/mod.ts";
 export {
-  AST,
+  from,
   tag,
   type VComponent,
   type VElement,
