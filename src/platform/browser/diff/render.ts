@@ -1,5 +1,5 @@
 import { VElement, VNode, VText, VType } from "./deps.ts";
-import { ChangeSet, diff, TextChangeSet } from "./mod.ts";
+import { Action, ChangeSet, diff, Props, TextChangeSet, Type } from "./mod.ts";
 
 interface RenderProps {
   parentVNode: VNode<Node>;
@@ -21,17 +21,17 @@ export function render(
   }
 
   if (props.vNode.type === VType.ELEMENT) {
-    return renderElement(props.parentVNode, props.vNode);
+    return element(props.parentVNode, props.vNode);
   }
 
   if (props.vNode.type === VType.TEXT) {
-    return renderText(props.parentVNode, props.vNode);
+    return text(props.parentVNode, props.vNode);
   }
 
   return [];
 }
 
-function renderElement(
+function element(
   parentVNode: VNode<Node>,
   vNode: VElement<Node>,
 ): ChangeSet<unknown>[] {
@@ -39,9 +39,9 @@ function renderElement(
 
   // Create DOM node and link it to the vNode
   changes.push({
-    type: "element",
-    action: "create",
-    payload: {
+    [Props.Type]: Type.Element,
+    [Props.Action]: Action.Create,
+    [Props.Payload]: {
       parentVNode,
       vNode,
     },
@@ -49,9 +49,9 @@ function renderElement(
 
   // Attach the nodeRef to the DOM
   changes.push({
-    type: "element",
-    action: "attach",
-    payload: {
+    [Props.Type]: Type.Element,
+    [Props.Action]: Action.Attach,
+    [Props.Payload]: {
       parentVNode,
       vNode,
     },
@@ -60,9 +60,9 @@ function renderElement(
   // Attach events
   vNode.eventRefs.forEach((event) => {
     changes.push({
-      type: "event",
-      action: "create",
-      payload: {
+      [Props.Type]: Type.Event,
+      [Props.Action]: Action.Create,
+      [Props.Payload]: {
         vNode,
         name: event.name,
         listener: event.listener,
@@ -73,9 +73,9 @@ function renderElement(
   // Add attributes
   for (const prop in vNode.props) {
     changes.push({
-      type: "attribute",
-      action: "create",
-      payload: {
+      [Props.Type]: Type.Attribute,
+      [Props.Action]: Action.Create,
+      [Props.Payload]: {
         vNode,
         name: prop,
         value: <string> vNode.props[prop],
@@ -90,20 +90,20 @@ function renderElement(
   return changes;
 }
 
-function renderText(
+function text(
   parentVNode: VNode<Node>,
   vNode: VText<Node>,
 ): TextChangeSet[] {
   return [{
-    action: "create",
-    type: "text",
-    payload: {
+    [Props.Type]: Type.Text,
+    [Props.Action]: Action.Create,
+    [Props.Payload]: {
       vNode: vNode,
     },
   }, {
-    action: "attach",
-    type: "text",
-    payload: {
+    [Props.Type]: Type.Text,
+    [Props.Action]: Action.Attach,
+    [Props.Payload]: {
       parentVNode,
       vNode,
     },

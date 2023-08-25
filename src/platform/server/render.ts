@@ -1,4 +1,4 @@
-import { AST, VComponent, VElement, VNode, VText, VType } from "./deps.ts";
+import { from, VComponent, VElement, VNode, VText, VType } from "./deps.ts";
 import "../../types.ts";
 
 import { escapeHtml } from "./utils.ts";
@@ -27,7 +27,7 @@ export function vNodeToString(vNode: VNode<unknown>) {
 export function renderToString(
   node: JSX.Node,
 ): string {
-  const tree = AST.create<unknown>(node);
+  const tree = from<unknown>(node);
   return stringify(tree);
 }
 
@@ -36,7 +36,11 @@ function stringify<T>(vNode: VNode<T>): string {
 
   switch (vNode.type) {
     case VType.TEXT:
-      return escapeHtml((<VText<T>> vNode).text.toString());
+      return escapeHtml(
+        (typeof vNode.text === "object" && "get" in vNode.text)
+          ? `${vNode.text.get}`
+          : `${vNode.text}`,
+      );
     case VType.ELEMENT:
       return elementToString(<VElement<T>> vNode);
     case VType.COMPONENT:

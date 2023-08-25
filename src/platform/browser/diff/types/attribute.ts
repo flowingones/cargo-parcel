@@ -1,5 +1,9 @@
-import { VElement, VNodeRef } from "./deps.ts";
-import { ChangeSet } from "./mod.ts";
+import { VElement, VNodeRef } from "../deps.ts";
+import { Action, ChangeSet, Props, Type } from "../mod.ts";
+
+interface BaseAttributeChangeSet<T> extends ChangeSet<T> {
+  [Props.Type]: Type.Attribute;
+}
 
 export interface CreateAttributePayload {
   vNode: VElement<Node>;
@@ -18,19 +22,34 @@ export interface DeleteAttributePayload {
   name: string;
 }
 
-export interface AttributeChangeSet extends
-  ChangeSet<
-    CreateAttributePayload | UpdateAttributePayload | DeleteAttributePayload
-  > {
-  type: "attribute";
+export interface CreateAttributeChangeSet
+  extends BaseAttributeChangeSet<CreateAttributePayload> {
+  [Props.Action]: Action.Create;
 }
 
+export interface UpdateAttributeChangeSet
+  extends BaseAttributeChangeSet<UpdateAttributePayload> {
+  [Props.Action]: Action.Update;
+}
+
+export interface DeleteAttributeChangeSet
+  extends BaseAttributeChangeSet<DeleteAttributePayload> {
+  [Props.Action]: Action.Delete;
+}
+
+export type AttributeChangeSet =
+  | CreateAttributeChangeSet
+  | UpdateAttributeChangeSet
+  | DeleteAttributeChangeSet;
+
 export function attribute(change: AttributeChangeSet) {
-  if (change.action === "create" || change.action === "update") {
-    createOrUpdate(<CreateAttributePayload> change.payload);
-  }
-  if (change.action === "delete") {
-    remove(<DeleteAttributePayload> change.payload);
+  switch (change[Props.Action]) {
+    case Action.Create:
+      return createOrUpdate(<CreateAttributePayload> change[Props.Payload]);
+    case Action.Update:
+      return createOrUpdate(<CreateAttributePayload> change[Props.Payload]);
+    case Action.Delete:
+      return remove(<DeleteAttributePayload> change[Props.Payload]);
   }
 }
 
@@ -96,9 +115,9 @@ export function compareAttributes(
     for (const prop in previousProps) {
       if (!vNode.props[prop]) {
         changes.push({
-          action: "delete",
-          type: "attribute",
-          payload: {
+          [Props.Action]: Action.Delete,
+          [Props.Type]: Type.Attribute,
+          [Props.Payload]: {
             vNode,
             name: prop,
           },
@@ -120,9 +139,9 @@ export function setAttribute(
     value === true
   ) {
     return [{
-      action: "create",
-      type: "attribute",
-      payload: {
+      [Props.Action]: Action.Create,
+      [Props.Type]: Type.Attribute,
+      [Props.Payload]: {
         vNode,
         name: key,
         value,
@@ -131,9 +150,9 @@ export function setAttribute(
   }
   if (value === false) {
     return [{
-      type: "attribute",
-      action: "delete",
-      payload: {
+      [Props.Type]: Type.Attribute,
+      [Props.Action]: Action.Delete,
+      [Props.Payload]: {
         vNode,
         name: key,
       },

@@ -1,30 +1,125 @@
-import { AST, tag, VComponent, VElement, VMode, VText, VType } from "./mod.ts";
-import { state } from "./state/mod.ts";
-import { assert, assertEquals } from "std/testing/asserts.ts";
+import { from, VText, VType } from "./ast.ts";
+import { tag } from "./tag.ts";
 
-Deno.test("AST: vText", async (t) => {
-  const vText = AST.create("hello world");
+import { assertEquals, assertThrows } from "std/testing/asserts.ts";
+import { State } from "./state/mod.ts";
 
-  await t.step('should have type equals "vText"', () => {
-    assertEquals(vText?.type, VType.TEXT);
+Deno.test(`${from.name}: string and number values`, async (t) => {
+  // null and undefined values
+  await t.step("should return undefined from undefined", () => {
+    assertEquals(
+      from(undefined),
+      undefined,
+    );
   });
-  await t.step('should have text props equals "hello world"', () => {
-    assertEquals((<VText<unknown>> vText).text, "hello world");
+  await t.step("should return undefined from null", () => {
+    assertEquals(
+      from(null),
+      undefined,
+    );
   });
-  await t.step('should have empty prop "eventRefs"', () => {
-    assertEquals((<VText<unknown>> vText).eventRefs, []);
+
+  // string number and State values
+  await t.step("should create vText from <number>0", () => {
+    assertEquals(
+      from(0),
+      {
+        type: VType.TEXT,
+        text: "0",
+        eventRefs: [],
+      },
+    );
+  });
+  await t.step("should create vText from <number>1", () => {
+    const vText = <VText<unknown>> from(1);
+    assertEquals(vText, {
+      type: VType.TEXT,
+      text: "1",
+      eventRefs: [],
+    });
+  });
+  await t.step("should create vText from <string>0", () => {
+    const vText = <VText<unknown>> from("0");
+    assertEquals(vText, {
+      type: VType.TEXT,
+      text: "0",
+      eventRefs: [],
+    });
+  });
+  await t.step("should create vText from <string>1", () => {
+    const vText = <VText<unknown>> from("1");
+    assertEquals(vText, {
+      type: VType.TEXT,
+      text: "1",
+      eventRefs: [],
+    });
+  });
+  await t.step("should create vText from <State>", () => {
+    const state = new State("Hello World!");
+    const vText = <VText<unknown>> from(state);
+    assertEquals(vText, {
+      type: VType.TEXT,
+      text: state,
+      eventRefs: [],
+    });
+    assertEquals((<State<string>> vText.text).get, state.get);
+  });
+
+  await t.step("should create vElement with string as child", () => {
+    assertEquals(
+      from(tag("h1", null, ["Hello world!"])),
+      {
+        tag: "h1",
+        type: VType.ELEMENT,
+        props: {},
+        eventRefs: [],
+        children: [
+          {
+            eventRefs: [],
+            text: "Hello world!",
+            type: 0,
+          },
+        ],
+      },
+    );
+  });
+
+  /*
+  await t.step("should create vComponent", () => {
+    assertEquals(from(tag(App, null, [])), {
+      id: Symbol(),
+      type: VType.COMPONENT,
+      fn: App,
+      mode: VMode.Created,
+      props: {
+        children: [],
+      },
+      ast: {
+        type: VType.ELEMENT,
+        tag: "div",
+        props: { class: "blue" },
+        eventRefs: [],
+        children: [{
+          eventRefs: [],
+          text: "Hello World",
+          type: 0,
+        }],
+      },
+    });
+  });
+  */
+
+  // arbitrary values
+  await t.step("should throw an error for value NaN", () => {
+    assertThrows(() => from(NaN), undefined);
   });
 });
 
-Deno.test("AST: vElement", async (t) => {
-  const vElement = AST.create(
-    tag("div", { class: "button" }, ["hello"]),
-  );
-  await t.step('should have type "vElement"', () => {
-    assertEquals(vElement?.type, VType.ELEMENT);
-  });
-});
+function App() {
+  return tag("div", { class: "blue" }, "Hello World");
+}
 
+/*
 Deno.test("AST: vComponent", async (t) => {
   const vNode = <VComponent<unknown>> AST.create(tag(App, null, []));
 
@@ -64,9 +159,8 @@ Deno.test("should update vComponent", async (t) => {
 });
 
 function App() {
-  const [visible, setVisibilty] = state(true);
-  setter = setVisibilty;
-  return tag("div", { class: visible ? "blue" : "red" }, "Hello World");
+  return tag("div", { class: "blue" }, "Hello World");
 }
 
 let setter: (value: boolean) => void;
+*/

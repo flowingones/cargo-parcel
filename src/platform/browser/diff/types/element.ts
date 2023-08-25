@@ -1,5 +1,9 @@
-import { type VElement, VType } from "./deps.ts";
-import type { ChangeSet } from "./mod.ts";
+import { type VElement, VType } from "../deps.ts";
+import { Action, type ChangeSet, Props, Type } from "../mod.ts";
+
+interface BaseElementChangeSet<T> extends ChangeSet<T> {
+  [Props.Type]: Type.Element;
+}
 
 export interface CreateElementPayload {
   parentVNode: VElement<Node>;
@@ -26,43 +30,51 @@ export interface DeleteElementPayload {
   vNode: VElement<Node>;
 }
 
-export interface ElementChangeSet extends
-  ChangeSet<
-    | CreateElementPayload
-    | AttachElementPayload
-    | ReplaceElementPayload
-    | UpdateElementPayload
-    | DeleteElementPayload
-  > {
-  type: "element";
-  action: "create" | "attach" | "replace" | "update" | "delete";
+export interface CreateElementChangeSet
+  extends BaseElementChangeSet<CreateElementPayload> {
+  [Props.Action]: Action.Create;
 }
 
+export interface AttachElementChangeSet
+  extends BaseElementChangeSet<AttachElementPayload> {
+  [Props.Action]: Action.Attach;
+}
+
+export interface ReplaceElementChangeSet
+  extends BaseElementChangeSet<ReplaceElementPayload> {
+  [Props.Action]: Action.Replace;
+}
+
+export interface UpdateElementChangeSet
+  extends BaseElementChangeSet<UpdateElementPayload> {
+  [Props.Action]: Action.Update;
+}
+
+export interface DeleteElementChangeSet
+  extends BaseElementChangeSet<DeleteElementPayload> {
+  [Props.Action]: Action.Delete;
+}
+
+export type ElementChangeSet =
+  | CreateElementChangeSet
+  | AttachElementChangeSet
+  | ReplaceElementChangeSet
+  | UpdateElementChangeSet
+  | DeleteElementChangeSet;
+
 export function element(change: ElementChangeSet): void {
-  // Create an new element in the dom
-  if (change.action === "create") {
-    return create(<CreateElementPayload> change.payload);
+  switch (change[Props.Action]) {
+    case Action.Create:
+      return create(<CreateElementPayload> change[Props.Payload]);
+    case Action.Attach:
+      return attach(<AttachElementPayload> change[Props.Payload]);
+    case Action.Replace:
+      return replace(<ReplaceElementPayload> change[Props.Payload]);
+    case Action.Update:
+      return update(<UpdateElementPayload> change[Props.Payload]);
+    case Action.Delete:
+      return remove(<DeleteElementPayload> change[Props.Payload]);
   }
-
-  if (change.action === "attach") {
-    return attach(<AttachElementPayload> change.payload);
-  }
-
-  if (change.action === "replace") {
-    return replace(<ReplaceElementPayload> change.payload);
-  }
-
-  if (change.action === "update") {
-    return update(<UpdateElementPayload> change.payload);
-  }
-
-  if (change.action === "delete") {
-    return remove(<DeleteElementPayload> change.payload);
-  }
-  console.error(
-    `Change action not supported: ${change.action}`,
-    change.payload,
-  );
 }
 
 function create(payload: CreateElementPayload): void {
@@ -119,7 +131,6 @@ function remove(payload: DeleteElementPayload): void {
   (<Node> payload.parentVNode.nodeRef).removeChild(
     <Node> payload.vNode.nodeRef,
   );
-  // Run lifecycle "onDestroy" hooks associated with this element.
   payload.vNode.hooks?.onDestroy?.forEach((hook) => {
     hook();
   });
