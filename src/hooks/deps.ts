@@ -1,1 +1,1 @@
-export { from, scope, type VComponent, VMode } from "../mod.ts";
+export { scope, type VComponent, VMode } from "../mod.ts";

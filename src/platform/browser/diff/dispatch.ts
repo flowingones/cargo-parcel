@@ -13,6 +13,7 @@ export enum Action {
   Create,
   Update,
   Attach,
+  Mount,
   Replace,
   Delete,
 }

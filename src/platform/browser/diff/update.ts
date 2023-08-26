@@ -88,12 +88,21 @@ function replaceTextWithElement(
 ) {
   const changes: ChangeSet<unknown>[] = [];
 
-  vNode.nodeRef = previousVNode.nodeRef;
+  changes.push({
+    [Props.Type]: Type.Text,
+    [Props.Action]: Action.Delete,
+    [Props.Payload]: {
+      previousVNode,
+    },
+  });
 
   changes.push({
     [Props.Type]: Type.Element,
-    [Props.Action]: Action.Replace,
+    [Props.Action]: Action.Create,
     [Props.Payload]: {
+      parentVNode: {
+        nodeRef: previousVNode.nodeRef?.parentNode,
+      },
       vNode,
     },
   });

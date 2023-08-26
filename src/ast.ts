@@ -80,7 +80,7 @@ export function setComponentUpdater(
   vComponentUpdater = updater;
 }
 
-export function from<T>(node: JSX.Node | VComponent<T>): VNode<T> {
+export function create<T>(node: JSX.Node | VComponent<T>): VNode<T> {
   if (node == null) return;
 
   if (isTextNode(node)) {
@@ -102,10 +102,6 @@ export function from<T>(node: JSX.Node | VComponent<T>): VNode<T> {
   }
 }
 
-export function update<T>(vNode: VComponent<T>) {
-  return from(vNode);
-}
-
 function vText<T>(node: string | number | JSX.StateLike): VText<T> {
   return {
     type: VType.TEXT,
@@ -124,8 +120,8 @@ function vElement<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
     eventRefs: eventRefs,
     children: children?.map((child, i) => {
       return vNode
-        ? track(child, vNode.children ? vNode.children[i] : undefined)
-        : from(child);
+        ? update(child, vNode.children ? vNode.children[i] : undefined)
+        : create(child);
     }),
     ...rest,
   };
@@ -154,7 +150,7 @@ function createVComponent<T>(node: JSX.Element) {
 
   scope.push(component);
   setSubscriber(vComponentUpdater ? vComponentUpdater(component) : undefined);
-  component.ast = from(component.fn(props));
+  component.ast = create(component.fn(props));
   component.mode = VMode.Created;
   clearSubscriber();
   scope.shift();
@@ -185,11 +181,11 @@ function updateVComponent<T>(vComponent: VComponent<T>) {
   clearSubscriber();
   scope.shift();
 
-  updatedVComponent.ast = track(node, ast);
+  updatedVComponent.ast = update(node, ast);
   return updatedVComponent;
 }
 
-function track<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
+function update<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
   if (node == null) return;
 
   if (isTextNode(node)) {
@@ -212,6 +208,8 @@ function track<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
     }
     return createVComponent(node);
   }
+  // handle everything else...
+  // throw Error("Not supported value here!");
 }
 
 // TODO: Move type-guard to appropriate location

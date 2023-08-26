@@ -2,12 +2,12 @@
 /// <reference lib="DOM" />
 /// <reference lib="deno.ns" />
 
-import { SubscriberProps, Unsubscribe } from "../../state/mod.ts";
+import { Unsubscribe } from "../../state/mod.ts";
 import { tag } from "../../tag.ts";
 import {
+  create,
   diff,
   dispatch,
-  from,
   setComponentUpdater,
   VComponent,
   VElement,
@@ -29,13 +29,12 @@ export function launch(islands: Island[]) {
   setComponentUpdater((vComponent: VComponent<unknown>) => {
     return {
       update: () => {
-        const vNode = <VComponent<Node>> from(vComponent);
+        const vNode = <VComponent<Node>> create(vComponent);
         const changeSet = diff({
           vNode,
           previousVNode: <VComponent<Node>> vComponent,
         });
         vComponent.ast = vNode.ast;
-
         dispatch(changeSet);
       },
       unsubscribeCallback: (unsubscribe: Unsubscribe) => {
@@ -47,7 +46,7 @@ export function launch(islands: Island[]) {
   for (const island of islands) {
     const node = document.querySelector(`.${island.class}`);
     if (node) {
-      const vNode = <VComponent<Node>> from<Node>(
+      const vNode = <VComponent<Node>> create<Node>(
         tag(island.node, island.props, []),
       );
       typeof (<VElement<Node>> vNode.ast).props.class === "string"
