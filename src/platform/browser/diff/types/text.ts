@@ -1,5 +1,4 @@
 // TODO: replace with dedicated VState type
-import { SubscriberProps } from "../../../../state/state.ts";
 import type { VNode, VNodeRef, VState, VText } from "../deps.ts";
 import { Action, type ChangeSet, isState, Props, Type } from "../mod.ts";
 

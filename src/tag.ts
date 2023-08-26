@@ -25,17 +25,26 @@ export function tag(
     tag,
     props,
     eventRefs,
-    children: flatten(children).filter((child) => child != null),
+    children: flattenAndFilter(children),
   };
 }
 
-function flatten(children: JSX.Node[] | JSX.Node[][]): JSX.Node[] {
+function flattenAndFilter(children: unknown[] | unknown[][]): JSX.Node[] {
   const flatten: JSX.Node[] = [];
   for (const child of children) {
     if (Array.isArray(child)) {
       flatten.push(...child);
     } else {
-      flatten.push(child);
+      // map children with true to string
+      if (child === true) {
+        flatten.push("true");
+        continue;
+      }
+      // skip children with value of undefined, null or false
+      if (child == null || child === false) {
+        continue;
+      }
+      flatten.push(<JSX.Node> child);
     }
   }
   return flatten;

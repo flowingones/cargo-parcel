@@ -57,6 +57,14 @@ function element(
     },
   });
 
+  changes.push({
+    [Props.Type]: Type.Element,
+    [Props.Action]: Action.Mount,
+    [Props.Payload]: {
+      vNode,
+    },
+  });
+
   // Attach events
   vNode.eventRefs.forEach((event) => {
     changes.push({

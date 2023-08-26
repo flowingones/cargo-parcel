@@ -1,4 +1,4 @@
-import { from, VComponent, VElement, VNode, VText, VType } from "./deps.ts";
+import { create, VComponent, VElement, VNode, VType } from "./deps.ts";
 import "../../types.ts";
 
 import { escapeHtml } from "./utils.ts";
@@ -27,7 +27,7 @@ export function vNodeToString(vNode: VNode<unknown>) {
 export function renderToString(
   node: JSX.Node,
 ): string {
-  const tree = from<unknown>(node);
+  const tree = create<unknown>(node);
   return stringify(tree);
 }
 
@@ -62,9 +62,9 @@ function elementToString<T>(vNode: VElement<T>): string {
       stringFrom(attributes)
     }>${unsafeInnerHTML}</${vNode.tag}>`;
   }
-  return `<${vNode.tag}${stringFrom(attributes)}>${
-    children?.map((child) => stringify(child)).join("")
-  }</${vNode.tag}>`;
+  return `<${vNode.tag}${stringFrom(attributes)}>${children?.map((child) =>
+    stringify(child)
+  ).join("")}</${vNode.tag}>`;
 }
 
 function stringFrom(attributes: JSX.IntrinsicElements): string {

@@ -10,6 +10,10 @@ export interface CreateElementPayload {
   vNode: VElement<Node>;
 }
 
+export interface MountElementPayload {
+  vNode: VElement<Node>;
+}
+
 export interface AttachElementPayload {
   parentVNode: VElement<Node>;
   vNode: VElement<Node>;
@@ -40,6 +44,11 @@ export interface AttachElementChangeSet
   [Props.Action]: Action.Attach;
 }
 
+export interface MountElementChangeSet
+  extends BaseElementChangeSet<MountElementPayload> {
+  [Props.Action]: Action.Mount;
+}
+
 export interface ReplaceElementChangeSet
   extends BaseElementChangeSet<ReplaceElementPayload> {
   [Props.Action]: Action.Replace;
@@ -58,6 +67,7 @@ export interface DeleteElementChangeSet
 export type ElementChangeSet =
   | CreateElementChangeSet
   | AttachElementChangeSet
+  | MountElementChangeSet
   | ReplaceElementChangeSet
   | UpdateElementChangeSet
   | DeleteElementChangeSet;
@@ -68,6 +78,8 @@ export function element(change: ElementChangeSet): void {
       return create(<CreateElementPayload> change[Props.Payload]);
     case Action.Attach:
       return attach(<AttachElementPayload> change[Props.Payload]);
+    case Action.Mount:
+      return mount(<MountElementPayload> change[Props.Payload]);
     case Action.Replace:
       return replace(<ReplaceElementPayload> change[Props.Payload]);
     case Action.Update:
@@ -89,6 +101,9 @@ function attach(payload: AttachElementPayload): void {
   if (payload.vNode.type === VType.ELEMENT && payload.vNode.nodeRef) {
     (<Node> payload.parentVNode.nodeRef)?.appendChild(payload.vNode.nodeRef);
   }
+}
+
+function mount(payload: MountElementPayload) {
   // Run lifecycle "onMount" hooks associated with this element.
   payload.vNode.hooks?.onMount?.forEach((hook) => {
     const onDestroy = hook();

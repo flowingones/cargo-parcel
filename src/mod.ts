@@ -1,7 +1,7 @@
 // Cargo Parcel – Version 0.1.89
 export { tag } from "./tag.ts";
 export {
-  from,
+  create,
   scope,
   setComponentUpdater,
   type VBase,

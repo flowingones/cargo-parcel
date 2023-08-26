@@ -1,5 +1,5 @@
 export {
-  from,
+  create,
   setComponentUpdater,
   type VComponent,
   type VElement,
