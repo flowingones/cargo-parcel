@@ -32,7 +32,6 @@ export class State<T> {
     if (subscriber) {
       this.subscribe(<Subscriber<T>> subscriber);
     }
-    console.log(subscriber);
     return this.#value;
   }
 

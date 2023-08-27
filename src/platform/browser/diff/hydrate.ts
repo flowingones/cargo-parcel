@@ -53,6 +53,8 @@ function element(
   } else {
     // Link current dom node with the vnode
     props.vNode.nodeRef = props.node;
+
+    props.vNode.ref?.set(props.vNode.nodeRef);
     props.vNode.hooks?.onMount?.forEach((hook) => {
       const onDestroy = hook();
       if (typeof onDestroy === "function" && props.vNode.hooks) {

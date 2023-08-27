@@ -9,6 +9,13 @@ import {
   TextChangeSet,
 } from "./mod.ts";
 
+export enum Type {
+  Element,
+  Event,
+  Attribute,
+  Text,
+}
+
 export enum Action {
   Create,
   Update,
@@ -16,12 +23,6 @@ export enum Action {
   Mount,
   Replace,
   Delete,
-}
-export enum Type {
-  Element,
-  Event,
-  Attribute,
-  Text,
 }
 
 export enum Props {

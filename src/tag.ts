@@ -10,6 +10,7 @@ export function tag(
   const { ...props }: JSX.ElementProps = attributes || {};
 
   const eventRefs: JSX.EventRef[] = [];
+  let ref: JSX.Ref | undefined = undefined;
 
   for (const prop in props) {
     if (isEventName(prop)) {
@@ -19,12 +20,17 @@ export function tag(
       });
       delete props[prop];
     }
+    if (prop === "ref") {
+      ref = <JSX.Ref> props[prop];
+      delete props[prop];
+    }
   }
 
   return {
     tag,
     props,
     eventRefs,
+    ref,
     children: flattenAndFilter(children),
   };
 }

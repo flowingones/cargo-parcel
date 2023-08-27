@@ -21,6 +21,7 @@ export interface AttachElementPayload {
 
 export interface ReplaceElementPayload {
   vNode: VElement<Node>;
+  node: Node;
 }
 
 export interface UpdateElementPayload {
@@ -121,12 +122,12 @@ function replace(payload: ReplaceElementPayload): void {
   if (payload.vNode.type === VType.ELEMENT) {
     const node = createElement(
       payload.vNode,
-      <Node> (<Node> payload.vNode.nodeRef).parentNode,
+      <Node> (<Node> payload.node).parentNode,
     );
 
-    payload.vNode.nodeRef?.parentNode?.replaceChild(
+    payload.node?.parentNode?.replaceChild(
       node,
-      payload.vNode.nodeRef,
+      payload.node,
     );
 
     payload.vNode.nodeRef = node;
