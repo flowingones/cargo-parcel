@@ -33,7 +33,7 @@ function flattenAndFilter(children: unknown[] | unknown[][]): JSX.Node[] {
   const flatten: JSX.Node[] = [];
   for (const child of children) {
     if (Array.isArray(child)) {
-      flatten.push(...child);
+      flatten.push(...flattenAndFilter(child));
     } else {
       // map children with true to string
       if (child === true) {

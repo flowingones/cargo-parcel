@@ -1,20 +1,20 @@
-import { from, VText, VType } from "./ast.ts";
+import { create, VText, VType } from "./ast.ts";
 import { tag } from "./tag.ts";
 
 import { assertEquals, assertThrows } from "std/testing/asserts.ts";
 import { State } from "./state/mod.ts";
 
-Deno.test(`${from.name}: string and number values`, async (t) => {
+Deno.test(`${create.name}: string and number values`, async (t) => {
   // null and undefined values
   await t.step("should return undefined from undefined", () => {
     assertEquals(
-      from(undefined),
+      create(undefined),
       undefined,
     );
   });
   await t.step("should return undefined from null", () => {
     assertEquals(
-      from(null),
+      create(null),
       undefined,
     );
   });
@@ -22,7 +22,7 @@ Deno.test(`${from.name}: string and number values`, async (t) => {
   // string number and State values
   await t.step("should create vText from <number>0", () => {
     assertEquals(
-      from(0),
+      create(0),
       {
         type: VType.TEXT,
         text: "0",
@@ -31,7 +31,7 @@ Deno.test(`${from.name}: string and number values`, async (t) => {
     );
   });
   await t.step("should create vText from <number>1", () => {
-    const vText = <VText<unknown>> from(1);
+    const vText = <VText<unknown>> create(1);
     assertEquals(vText, {
       type: VType.TEXT,
       text: "1",
@@ -39,7 +39,7 @@ Deno.test(`${from.name}: string and number values`, async (t) => {
     });
   });
   await t.step("should create vText from <string>0", () => {
-    const vText = <VText<unknown>> from("0");
+    const vText = <VText<unknown>> create("0");
     assertEquals(vText, {
       type: VType.TEXT,
       text: "0",
@@ -47,7 +47,7 @@ Deno.test(`${from.name}: string and number values`, async (t) => {
     });
   });
   await t.step("should create vText from <string>1", () => {
-    const vText = <VText<unknown>> from("1");
+    const vText = <VText<unknown>> create("1");
     assertEquals(vText, {
       type: VType.TEXT,
       text: "1",
@@ -56,7 +56,7 @@ Deno.test(`${from.name}: string and number values`, async (t) => {
   });
   await t.step("should create vText from <State>", () => {
     const state = new State("Hello World!");
-    const vText = <VText<unknown>> from(state);
+    const vText = <VText<unknown>> create(state);
     assertEquals(vText, {
       type: VType.TEXT,
       text: state,
@@ -67,7 +67,7 @@ Deno.test(`${from.name}: string and number values`, async (t) => {
 
   await t.step("should create vElement with string as child", () => {
     assertEquals(
-      from(tag("h1", null, ["Hello world!"])),
+      create(tag("h1", null, ["Hello world!"])),
       {
         tag: "h1",
         type: VType.ELEMENT,
@@ -111,7 +111,7 @@ Deno.test(`${from.name}: string and number values`, async (t) => {
 
   // arbitrary values
   await t.step("should throw an error for value NaN", () => {
-    assertThrows(() => from(NaN), undefined);
+    assertThrows(() => create(NaN), undefined);
   });
 });
 

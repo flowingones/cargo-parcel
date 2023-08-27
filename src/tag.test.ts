@@ -319,7 +319,8 @@ Deno.test(tag.name, async (t) => {
     'should create JSX.Element from function element with string and "undefined" as children',
     () => {
       assertEquals(
-        tag("div", null, ["hello", undefined, " world"]).children,
+        tag("div", null, ["hello", undefined, <any> false, null, " world"])
+          .children,
         ["hello", " world"],
       );
     },
