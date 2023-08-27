@@ -5,6 +5,7 @@ declare global {
     type Element = {
       tag: string | Component;
       eventRefs: EventRef[];
+      ref?: Ref;
       props: ElementProps;
       children: Node[];
     };
@@ -13,6 +14,7 @@ declare global {
 
     type StateLike = {
       get: string | number;
+      set: (value: unknown) => unknown;
       subscribe: (scope: { update: (value: string | number) => void }) => void;
     };
 
@@ -20,6 +22,8 @@ declare global {
       name: string;
       listener: () => void;
     };
+
+    type Ref = StateLike;
 
     type ElementProps = {
       children?: Node[];

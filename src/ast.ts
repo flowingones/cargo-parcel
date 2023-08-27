@@ -40,6 +40,7 @@ export interface VNodeRef<T> extends VBase {
   nodeRef?: T;
   eventRefs: JSX.EventRef[];
   children?: VNode<T>[];
+  ref?: JSX.Ref;
 }
 
 export interface VElement<T> extends VNodeRef<T> {
@@ -111,13 +112,14 @@ function vText<T>(node: string | number | JSX.StateLike): VText<T> {
 }
 
 function vElement<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
-  const { tag, children, eventRefs, props, ...rest } = node;
+  const { tag, children, ref, eventRefs, props, ...rest } = node;
 
   return {
     type: VType.ELEMENT,
     tag: <string> tag,
     props: <ElementProps<T>> props,
-    eventRefs: eventRefs,
+    eventRefs,
+    ref,
     children: children?.map((child, i) => {
       return vNode
         ? update(child, vNode.children ? vNode.children[i] : undefined)

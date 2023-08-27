@@ -5,7 +5,6 @@ import {
   Action,
   ChangeSet,
   compareAttributes,
-  CreateEventChangeSet,
   diff,
   ElementChangeSet,
   EventChangeSet,
@@ -44,7 +43,6 @@ function updateElement(
   const changes: ChangeSet<unknown>[] = [];
   let skipPrevious = false;
 
-  vNode.nodeRef = <Node> previousVNode.nodeRef;
   vNode.hooks = previousVNode.hooks;
 
   // Tag did change
@@ -54,11 +52,14 @@ function updateElement(
         [Props.Type]: Type.Element,
         [Props.Action]: Action.Replace,
         [Props.Payload]: {
+          node: previousVNode.nodeRef,
           vNode,
         },
       },
     );
     skipPrevious = true;
+  } else {
+    vNode.nodeRef = previousVNode.nodeRef;
   }
 
   // Update event listener
@@ -88,34 +89,20 @@ function replaceTextWithElement(
 ) {
   const changes: ChangeSet<unknown>[] = [];
 
-  changes.push({
-    [Props.Type]: Type.Text,
-    [Props.Action]: Action.Delete,
-    [Props.Payload]: {
-      previousVNode,
-    },
-  });
+  vNode.nodeRef = previousVNode.nodeRef;
 
   changes.push({
     [Props.Type]: Type.Element,
-    [Props.Action]: Action.Create,
+    [Props.Action]: Action.Replace,
     [Props.Payload]: {
-      parentVNode: {
-        nodeRef: previousVNode.nodeRef?.parentNode,
-      },
+      node: previousVNode.nodeRef,
       vNode,
     },
   });
 
   // Add events
   changes.push(
-    {
-      [Props.Type]: Type.Event,
-      [Props.Action]: Action.Create,
-      [Props.Payload]: {
-        vNode,
-      },
-    } as CreateEventChangeSet,
+    ...updateEvents(vNode),
   );
 
   // Add attributes
