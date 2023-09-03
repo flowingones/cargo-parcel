@@ -1,11 +1,13 @@
-import { isProd } from "cargo/utils/environment.ts";
-import { Get, RequestContext } from "cargo/http/mod.ts";
-import { parse } from "std/path/mod.ts";
-import { Bundler, BUNDLER_PUBLIC_ROUTE } from "../bundle.ts";
-import { mappedPath } from "../mod.ts";
-import { Plugin, plugins } from "../plugin.ts";
-import { PageHandler } from "../page/handler.ts";
+import { type Task } from "cargo/mod.ts";
+import { Get } from "cargo/http/mod.ts";
 import { type Middleware } from "cargo/middleware/middleware.ts";
+import { join } from "std/path/mod.ts";
+
+import { mappedPath } from "../pages/path-mapping.ts";
+import { type Plugin, plugins } from "../plugins/plugins.ts";
+import { PageHandler } from "../pages/handler.ts";
+import { BUILD_ID } from "../constants.ts";
+import { isProd } from "cargo/utils/environment.ts";
 
 export type PageRoute = {
   page: Renderable;
@@ -25,95 +27,102 @@ export interface PageLikeProps<T = undefined> extends JSX.ElementProps {
 // deno-lint-ignore no-explicit-any
 export type PageLike = (props: PageLikeProps<any>) => JSX.Element;
 
-type ParcelProps = {
-  pages: Record<string, PageRoute>;
-  islands?: Record<string, JSX.Component>;
+export type ParcelTaskConfig = {
   plugins?: Plugin[];
+  pagesPath?: string;
+  islandsPath?: string;
+  scriptsPath?: string;
+  scriptsAssetsPath?: string;
+  manifestPath?: string;
 };
 
-export async function Parcel(props: ParcelProps) {
-  const entryPoints: Record<string, string> = {};
+export const Parcel: (config: ParcelTaskConfig) => Promise<Task> =
+  async function (
+    config: ParcelTaskConfig,
+  ) {
+    const _manifestPath = config.manifestPath || ".manifest";
 
-  /*
-   * Islands
-   */
-  if (props.islands) {
-    entryPoints["main"] =
-      new URL("../../platform/browser/launch.ts", import.meta.url).href;
+    /*
+    /* Pages
+     */
+    const _pages: Record<string, PageRoute> = (await import(
+      config.pagesPath || join(Deno.cwd(), _manifestPath, ".pages.ts")
+    )).default;
 
-    for (const island in props.islands) {
-      entryPoints[`island-${parse(island).name}`] = `./${island}`;
-    }
-  }
+    /*
+     * Islands
+     */
+    const _islands: Record<string, JSX.Component> = (await import(
+      config.islandsPath || join(Deno.cwd(), _manifestPath, ".islands.ts")
+    )).default;
 
-  /*
-   * Plugins
-   */
-  const { scripts, entryPoints: pluginEntryPoints, tasks } = await plugins(
-    props.plugins,
-  );
+    /*
+     * Scripts
+     */
+    const _scripts: string[] = (await import(
+      config.scriptsPath || join(Deno.cwd(), _manifestPath, ".scripts.ts")
+    )).default;
 
-  if (pluginEntryPoints) {
-    for (const key in pluginEntryPoints) {
-      entryPoints[key] = pluginEntryPoints[key];
-    }
-  }
-
-  return () => {
-    // Setup JS bundling for frontend
-    if (Object.keys(entryPoints).length) {
-      const bundler = new Bundler(entryPoints);
-
-      Get(
-        `${BUNDLER_PUBLIC_ROUTE}/:fileName`,
-        async ({ params }: RequestContext) => {
-          const file = await bundler.resolve(params!.fileName!);
-          if (file instanceof Uint8Array) {
-            return new Response(file, {
-              headers: {
-                "Content-Type": "application/javascript",
-                ...(isProd()
-                  ? { "Cache-Control": "public, max-age=604800, immutable" }
-                  : {}),
-              },
-            });
-          } else {
-            return new Response(null, {
-              status: 404,
-            });
-          }
-        },
+    for (const _script of _scripts) {
+      const _file = await Deno.readFile(
+        join(
+          Deno.cwd(),
+          _manifestPath,
+          config.scriptsAssetsPath || ".scripts",
+          _script,
+        ),
       );
+      Get(`/_parcel/${BUILD_ID}/${_script}`, () => {
+        return new Response(_file, {
+          headers: {
+            "Content-Type": "application/javascript",
+            ...(isProd()
+              ? { "Cache-Control": "public, max-age=604800, immutable" }
+              : {}),
+          },
+        });
+      });
     }
 
-    for (const route in props.pages) {
-      const page: PageLike = props.pages[route].page.default;
-      const layouts: PageLike[] = props.pages[route].layouts.map(
-        (layout) => {
-          return layout.default;
-        },
-      );
+    //TODO: Load and and register
 
-      const middleware = props.pages[route].middleware.map(
-        (module) => {
-          return module.default;
-        },
-      ).flat();
+    /*
+     * Plugins
+     */
+    const { scripts, tasks } = await plugins(
+      // TODO: Remove duplicate path defintion -> tasks/ParcelManfifest.ts
+      { plugins: config.plugins, assetsPath: join("_parcel", BUILD_ID) },
+    );
 
-      const path = mappedPath(route);
+    return () => {
+      for (const route in _pages) {
+        const page: PageLike = _pages[route].page.default;
+        const layouts: PageLike[] = _pages[route].layouts.map(
+          (layout) => {
+            return layout.default;
+          },
+        );
 
-      Get(
-        path.path,
-        new PageHandler({
-          page,
-          layouts,
-          islands: props.islands,
-          middleware,
-          scripts,
-          tasks,
-          statusCode: path.statusCode,
-        }).handle(),
-      );
-    }
+        const middleware = _pages[route].middleware.map(
+          (module) => {
+            return module.default;
+          },
+        ).flat();
+
+        const path = mappedPath(route);
+
+        Get(
+          path.path,
+          new PageHandler({
+            page,
+            layouts,
+            islands: _islands,
+            middleware,
+            scripts,
+            tasks,
+            statusCode: path.statusCode,
+          }).handle(),
+        );
+      }
+    };
   };
-}
