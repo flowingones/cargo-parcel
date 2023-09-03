@@ -118,7 +118,7 @@ function replaceTextWithElement(
     });
   }
 
-  vNode.children?.forEach((child) => {
+  vNode.children?.filter((c) => c != null)?.forEach((child) => {
     changes.push(...diff({ parentVNode: vNode, vNode: child }));
   });
 
@@ -214,9 +214,11 @@ export function updateChildren(
   const changes: ChangeSet<unknown>[] = [];
   let previousChildren: VNode<Node>[] = [];
   if (props.previousVNode && Array.isArray(props.previousVNode.children)) {
-    previousChildren = [...props.previousVNode.children];
+    previousChildren = [...props.previousVNode.children].filter((c) =>
+      c != null
+    );
   }
-  props.vNode?.children?.forEach((child) => {
+  props.vNode?.children?.filter((c) => c != null)?.forEach((child) => {
     changes.push(...diff({
       parentVNode: props.vNode,
       vNode: child,
@@ -224,7 +226,7 @@ export function updateChildren(
     }));
   });
 
-  previousChildren?.forEach((previousChild) => {
+  previousChildren.forEach((previousChild) => {
     changes.push(
       ...diff({ parentVNode: props.vNode, previousVNode: previousChild }),
     );

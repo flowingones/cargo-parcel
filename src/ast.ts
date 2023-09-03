@@ -40,7 +40,6 @@ export interface VNodeRef<T> extends VBase {
   nodeRef?: T;
   eventRefs: JSX.EventRef[];
   children?: VNode<T>[];
-  ref?: JSX.Ref;
 }
 
 export interface VElement<T> extends VNodeRef<T> {
@@ -82,7 +81,11 @@ export function setComponentUpdater(
 }
 
 export function create<T>(node: JSX.Node | VComponent<T>): VNode<T> {
-  if (node == null) return;
+  if (typeof node === "undefined") return;
+
+  if (isEmptyNode(node)) {
+    return null;
+  }
 
   if (isTextNode(node)) {
     return vText(node);
@@ -112,17 +115,17 @@ function vText<T>(node: string | number | JSX.StateLike): VText<T> {
 }
 
 function vElement<T>(node: JSX.Element, vNode?: VElement<T>): VElement<T> {
-  const { tag, children, ref, eventRefs, props, ...rest } = node;
+  const { tag, children, eventRefs, props, ...rest } = node;
 
   return {
     type: VType.ELEMENT,
     tag: <string> tag,
     props: <ElementProps<T>> props,
     eventRefs,
-    ref,
     children: children?.map((child, i) => {
+      // TODO: Find a way to track VComponents with state.
       return vNode
-        ? update(child, vNode.children ? vNode.children[i] : undefined)
+        ? update(child, vNode.children ? vNode.children[i] : null)
         : create(child);
     }),
     ...rest,
@@ -188,7 +191,15 @@ function updateVComponent<T>(vComponent: VComponent<T>) {
 }
 
 function update<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
-  if (node == null) return;
+  if (typeof node === "undefined") return;
+
+  if (isEmptyNode(node)) {
+    if (vNode?.type === VType.COMPONENT) {
+      vNode.unsubs.forEach((unsub) => unsub());
+    }
+
+    return null;
+  }
 
   if (isTextNode(node)) {
     return vText(node);
@@ -210,8 +221,6 @@ function update<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
     }
     return createVComponent(node);
   }
-  // handle everything else...
-  // throw Error("Not supported value here!");
 }
 
 // TODO: Move type-guard to appropriate location
@@ -225,4 +234,8 @@ function isTextNode(
       (typeof value === "object" && "get" in value)
     )
   );
+}
+
+function isEmptyNode(value: unknown): value is boolean | null {
+  return (typeof value === "boolean" || value === null);
 }

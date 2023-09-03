@@ -91,7 +91,7 @@ function element(
     });
   }
 
-  vNode.children?.forEach((child) => {
+  vNode.children?.filter((c) => c != null).forEach((child) => {
     changes.push(...diff({ parentVNode: vNode, vNode: child }));
   });
 

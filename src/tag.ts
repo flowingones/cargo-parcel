@@ -10,7 +10,6 @@ export function tag(
   const { ...props }: JSX.ElementProps = attributes || {};
 
   const eventRefs: JSX.EventRef[] = [];
-  let ref: JSX.Ref | undefined = undefined;
 
   for (const prop in props) {
     if (isEventName(prop)) {
@@ -20,38 +19,24 @@ export function tag(
       });
       delete props[prop];
     }
-    if (prop === "ref") {
-      ref = <JSX.Ref> props[prop];
-      delete props[prop];
-    }
   }
 
   return {
     tag,
     props,
     eventRefs,
-    ref,
-    children: flattenAndFilter(children),
+    children: flatten(children),
   };
 }
 
-function flattenAndFilter(children: unknown[] | unknown[][]): JSX.Node[] {
-  const flatten: JSX.Node[] = [];
-  for (const child of children) {
-    if (Array.isArray(child)) {
-      flatten.push(...flattenAndFilter(child));
+function flatten(nodes: JSX.Node[] | JSX.Node[][]): JSX.Node[] {
+  const children: JSX.Node[] = [];
+  for (const node of nodes) {
+    if (Array.isArray(node)) {
+      children.push(...flatten(node));
     } else {
-      // map children with true to string
-      if (child === true) {
-        flatten.push("true");
-        continue;
-      }
-      // skip children with value of undefined, null or false
-      if (child == null || child === false) {
-        continue;
-      }
-      flatten.push(<JSX.Node> child);
+      children.push(<JSX.Node> node);
     }
   }
-  return flatten;
+  return children;
 }

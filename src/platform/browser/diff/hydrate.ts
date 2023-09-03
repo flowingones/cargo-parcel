@@ -54,7 +54,6 @@ function element(
     // Link current dom node with the vnode
     props.vNode.nodeRef = props.node;
 
-    props.vNode.ref?.set(props.vNode.nodeRef);
     props.vNode.hooks?.onMount?.forEach((hook) => {
       const onDestroy = hook();
       if (typeof onDestroy === "function" && props.vNode.hooks) {
@@ -82,7 +81,7 @@ function element(
     changes.push(...setAttribute(prop, props.vNode.props[prop], props.vNode));
   }
 
-  const children = props.vNode.children;
+  const children = props.vNode.children?.filter((c) => c != null);
   children?.forEach((child, index) => {
     changes.push(
       ...diff({
