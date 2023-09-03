@@ -2,7 +2,13 @@
   "compilerOptions": {
     "jsxFactory": "tag"
   },
-  "importMap": "./.dev/import_map.json",
+  "imports": {
+    "config/": "./examples/config/",
+    "std/": "https://deno.land/std@0.201.0/",
+    "cargo/": "https://deno.land/x/cargo@0.1.56/",
+    "parcel/": "../src/",
+    "inspect/": "https://deno.land/x/cargo_inspect@0.1.56/"
+  },
   "tasks": {
     "check": "deno check src/mod.ts src/cargo/mod.ts src/cargo/page/mod.ts src/cargo/tasks/mod.ts src/hooks/mod.ts src/platform/browser/mod.ts src/platform/server/mod.ts src/state/mod.ts"
   }
