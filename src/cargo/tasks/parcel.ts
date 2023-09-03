@@ -2,12 +2,12 @@ import { type Task } from "cargo/mod.ts";
 import { Get } from "cargo/http/mod.ts";
 import { type Middleware } from "cargo/middleware/middleware.ts";
 import { join } from "std/path/mod.ts";
+import { isProd } from "cargo/utils/environment.ts";
 
 import { mappedPath } from "../pages/path-mapping.ts";
 import { type Plugin, plugins } from "../plugins/plugins.ts";
 import { PageHandler } from "../pages/handler.ts";
 import { BUILD_ID } from "../constants.ts";
-import { isProd } from "cargo/utils/environment.ts";
 
 export type PageRoute = {
   page: Renderable;
@@ -28,6 +28,9 @@ export interface PageLikeProps<T = undefined> extends JSX.ElementProps {
 export type PageLike = (props: PageLikeProps<any>) => JSX.Element;
 
 export type ParcelTaskConfig = {
+  pages?: Record<string, PageRoute>;
+  islands?: Record<string, JSX.Component>;
+  scripts?: string[];
   plugins?: Plugin[];
   pagesPath?: string;
   islandsPath?: string;
@@ -36,31 +39,32 @@ export type ParcelTaskConfig = {
   manifestPath?: string;
 };
 
-export const Parcel: (config: ParcelTaskConfig) => Promise<Task> =
+export const Parcel: (config?: ParcelTaskConfig) => Promise<Task> =
   async function (
-    config: ParcelTaskConfig,
+    config?: ParcelTaskConfig,
   ) {
-    const _manifestPath = config.manifestPath || ".manifest";
+    const _manifestPath = config?.manifestPath || ".manifest";
 
     /*
     /* Pages
      */
-    const _pages: Record<string, PageRoute> = (await import(
-      config.pagesPath || join(Deno.cwd(), _manifestPath, ".pages.ts")
+    const _pages: Record<string, PageRoute> = config?.pages || (await import(
+      config?.pagesPath || join(Deno.cwd(), _manifestPath, ".pages.ts")
     )).default;
 
     /*
      * Islands
      */
-    const _islands: Record<string, JSX.Component> = (await import(
-      config.islandsPath || join(Deno.cwd(), _manifestPath, ".islands.ts")
-    )).default;
+    const _islands: Record<string, JSX.Component> = config?.islands ||
+      (await import(
+        config?.islandsPath || join(Deno.cwd(), _manifestPath, ".islands.ts")
+      )).default;
 
     /*
      * Scripts
      */
-    const _scripts: string[] = (await import(
-      config.scriptsPath || join(Deno.cwd(), _manifestPath, ".scripts.ts")
+    const _scripts: string[] = config?.scripts || (await import(
+      config?.scriptsPath || join(Deno.cwd(), _manifestPath, ".scripts.ts")
     )).default;
 
     for (const _script of _scripts) {
@@ -68,7 +72,7 @@ export const Parcel: (config: ParcelTaskConfig) => Promise<Task> =
         join(
           Deno.cwd(),
           _manifestPath,
-          config.scriptsAssetsPath || ".scripts",
+          config?.scriptsAssetsPath || ".scripts",
           _script,
         ),
       );
@@ -91,7 +95,7 @@ export const Parcel: (config: ParcelTaskConfig) => Promise<Task> =
      */
     const { scripts, tasks } = await plugins(
       // TODO: Remove duplicate path defintion -> tasks/ParcelManfifest.ts
-      { plugins: config.plugins, assetsPath: join("_parcel", BUILD_ID) },
+      { plugins: config?.plugins, assetsPath: join("_parcel", BUILD_ID) },
     );
 
     return () => {
