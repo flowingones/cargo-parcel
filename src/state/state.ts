@@ -28,16 +28,17 @@ export class State<T> {
     this.#value = value;
   }
 
-  get get() {
+  get get(): T {
     if (subscriber) {
       this.subscribe(<Subscriber<T>> subscriber);
     }
     return this.#value;
   }
 
-  set(value: T) {
+  set(value: T): T {
     this.#value = value;
     this.#track();
+    return value;
   }
 
   subscribe(subscriber: Subscriber<T>): Unsubscribe {

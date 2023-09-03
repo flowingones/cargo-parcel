@@ -1,11 +1,16 @@
 declare global {
   export namespace JSX {
-    type Node = string | number | StateLike | Element | undefined | null;
+    type TextNode = string | number | StateLike;
+    type EmptyNode = undefined | null | boolean;
+
+    type Node =
+      | TextNode
+      | EmptyNode
+      | Element;
 
     type Element = {
       tag: string | Component;
       eventRefs: EventRef[];
-      ref?: Ref;
       props: ElementProps;
       children: Node[];
     };
@@ -14,16 +19,15 @@ declare global {
 
     type StateLike = {
       get: string | number;
-      set: (value: unknown) => unknown;
-      subscribe: (scope: { update: (value: string | number) => void }) => void;
+      subscribe: (
+        subscriber: { update: (value: string) => void },
+      ) => () => void;
     };
 
     type EventRef = {
       name: string;
       listener: () => void;
     };
-
-    type Ref = StateLike;
 
     type ElementProps = {
       children?: Node[];

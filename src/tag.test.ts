@@ -1,5 +1,5 @@
 import { tag } from "./tag.ts";
-import { assertEquals } from "std/testing/asserts.ts";
+import { assertEquals } from "std/assert/mod.ts";
 
 Deno.test(tag.name, async (t) => {
   // html
@@ -63,7 +63,7 @@ Deno.test(tag.name, async (t) => {
           tag: "div",
           props: {},
           eventRefs: [],
-          children: [],
+          children: [undefined],
         },
       );
     },
@@ -210,7 +210,7 @@ Deno.test(tag.name, async (t) => {
   );
 
   await t.step(
-    'should create JSX.Element from function element with "undefined" as children',
+    "should create JSX.Element from function element with emtpy array as children",
     () => {
       const component: JSX.Element = tag(App, null, []);
       assertEquals(
@@ -319,9 +319,9 @@ Deno.test(tag.name, async (t) => {
     'should create JSX.Element from function element with string and "undefined" as children',
     () => {
       assertEquals(
-        tag("div", null, ["hello", undefined, <any> false, null, " world"])
+        tag("div", null, ["hello", undefined, false, null, " world"])
           .children,
-        ["hello", " world"],
+        ["hello", undefined, false, null, " world"],
       );
     },
   );

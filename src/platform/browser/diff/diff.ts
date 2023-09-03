@@ -26,6 +26,7 @@ export function diff(
   let { vNode, previousVNode, parentVNode, node } = props;
 
   parentVNode = parentVNode ? skipVComponents(parentVNode) : undefined;
+
   vNode = skipVComponents(vNode);
   previousVNode = previousVNode ? skipVComponents(previousVNode) : undefined;
 

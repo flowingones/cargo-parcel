@@ -1,7 +1,7 @@
 import { create, VText, VType } from "./ast.ts";
 import { tag } from "./tag.ts";
 
-import { assertEquals, assertThrows } from "std/testing/asserts.ts";
+import { assertEquals, assertThrows } from "std/assert/mod.ts";
 import { State } from "./state/mod.ts";
 
 Deno.test(`${create.name}: string and number values`, async (t) => {
@@ -12,10 +12,10 @@ Deno.test(`${create.name}: string and number values`, async (t) => {
       undefined,
     );
   });
-  await t.step("should return undefined from null", () => {
+  await t.step("should return null from null", () => {
     assertEquals(
       create(null),
-      undefined,
+      null,
     );
   });
 
