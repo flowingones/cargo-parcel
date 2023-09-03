@@ -1,14 +1,13 @@
-import { parse } from "std/path/mod.ts";
-import { isProd } from "cargo/utils/environment.ts";
-import { denoPlugin, esbuild } from "./deps.ts";
-import { BUILD_ID } from "./mod.ts";
+import { denoPlugins, esbuild } from "./deps.ts";
+
+export type EntryPoints = Record<string, string>;
 
 let isInitialized: boolean | Promise<void> = false;
 
 async function initialize() {
   if (isInitialized === false) {
-    if (Deno.run === undefined) {
-      const wasmURL = new URL("./esbuild.v17.0.0.wasm", import.meta.url).href;
+    if (Deno.run !== undefined) {
+      const wasmURL = new URL("./esbuild.v0.18.20.wasm", import.meta.url).href;
       isInitialized = fetch(wasmURL).then(async (r) => {
         const resp = new Response(r.body, {
           headers: { "Content-Type": "application/wasm" },
@@ -18,7 +17,7 @@ async function initialize() {
           wasmModule,
           worker: false,
         });
-      });
+      }).catch((e) => console.log(e));
     } else {
       isInitialized = esbuild.initialize({});
     }
@@ -33,21 +32,21 @@ export class Bundler {
   private files:
     | undefined
     | Map<string, Uint8Array>
-    | Promise<void>;
+    | Promise<Map<string, Uint8Array>>;
 
   constructor(
-    private entryPoints: Record<string, string>,
+    private entryPoints: EntryPoints,
+    private parse: (path: string) => { base: string },
   ) {}
 
-  async bundle(): Promise<void> {
+  async bundle(isProd = true): Promise<Map<string, Uint8Array>> {
     await initialize();
 
+    console.log(`file://${Deno.cwd()}/import_map.json`);
+
     const result = await esbuild.build({
-      /*
-         * Supress error in esbuild 15.x
-         @ts-ignore */
-      plugins: [denoPlugin({
-        importMapURL: new URL("./import_map.json", `file://${Deno.cwd()}/`),
+      plugins: [...denoPlugins({
+        importMapURL: `file://${Deno.cwd()}/import_map.json`,
       })],
       entryPoints: this.entryPoints,
       bundle: true,
@@ -55,7 +54,7 @@ export class Bundler {
       treeShaking: true,
       splitting: true,
       outdir: ".",
-      minify: isProd(),
+      minify: isProd,
       platform: "neutral",
       write: false,
       jsxFactory: "tag",
@@ -65,15 +64,20 @@ export class Bundler {
 
     const files = new Map<string, Uint8Array>();
 
-    result.outputFiles?.forEach((file) => {
-      files.set(parse(file.path).base.replaceAll("$", ""), file.contents);
-    });
+    result.outputFiles?.forEach(
+      (file: { path: string; contents: Uint8Array }) => {
+        files.set(
+          this.parse(file.path).base.replaceAll("$", ""),
+          file.contents,
+        );
+      },
+    );
 
     this.files = files;
-    return;
+    return files;
   }
 
-  async cache() {
+  async #cache() {
     if (typeof this.files === "undefined") {
       this.files = this.bundle();
     }
@@ -85,12 +89,10 @@ export class Bundler {
   }
 
   async resolve(fileName: string): Promise<Uint8Array | undefined> {
-    return (await this.cache()).get(fileName);
+    return (await this.#cache()).get(fileName);
+  }
+
+  stop() {
+    esbuild.stop();
   }
 }
-
-/**
- * @deprecated use "BUNDLER_ASSET_ROUTE" instead.
- */
-export const bundlerAssetRoute = `/_parcel/${BUILD_ID}`;
-export const BUNDLER_PUBLIC_ROUTE = `/_parcel/${BUILD_ID}`;
