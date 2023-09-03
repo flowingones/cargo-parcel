@@ -7,7 +7,7 @@ import type {
   AfterRenderTaskContext,
   PluginDefintions,
   PluginTaskContext,
-} from "../plugin.ts";
+} from "../plugins/plugins.ts";
 import { setServerContext } from "../context.ts";
 import { PageLike } from "../tasks/parcel.ts";
 

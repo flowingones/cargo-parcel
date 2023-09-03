@@ -1,4 +1,4 @@
-import { assertEquals } from "std/testing/asserts.ts";
+import { assertEquals } from "std/assert/mod.ts";
 import { getHead, head } from "./head.ts";
 
 Deno.test("Head helper:", async (t) => {
