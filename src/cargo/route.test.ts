@@ -1,5 +1,5 @@
 import { Route } from "./mod.ts";
-import { assertEquals, assertThrows } from "std/testing/asserts.ts";
+import { assertEquals, assertThrows } from "std/assert/mod.ts";
 import { setServerContext } from "./context.ts";
 Deno.test("Route", async (t) => {
   await t.step("should throw scope error (url)", () => {

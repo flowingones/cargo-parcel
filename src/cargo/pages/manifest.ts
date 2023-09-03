@@ -1,5 +1,6 @@
-import { dirname, join, parseArgs, walk } from "./deps.ts";
-import { createManifestDirectory } from "./manifest.ts";
+import { dirname, join } from "std/path/mod.ts";
+import { EOL, walk } from "std/fs/mod.ts";
+import { createManifestDirectory } from "../manifest/manifest.ts";
 
 interface FileImport {
   id: string;
@@ -19,51 +20,47 @@ interface Manifest {
   middleware: FileImport[];
 }
 
-async function command(
-  args: string[],
-): Promise<string> {
-  const options = parseArgs(args);
-  const basePath = options.path || "pages";
+type PagesManifestOptions = {
+  path: string;
+};
 
-  try {
-    const data = await scan(basePath);
+export async function pagesManifest(
+  options: PagesManifestOptions,
+): Promise<void> {
+  const basePath = options.path;
+  const data = await scan(basePath);
 
-    const pages = data.pages.map((page) => {
-      const layouts = data.layouts.filter((layout) => {
-        return page.path.startsWith(layout.path);
-      }).map((layout) => {
-        return layout.id;
-      });
-
-      const middleware = data.middleware.filter((middleware) => {
-        return page.path.startsWith(middleware.path);
-      }).map((middleware) => {
-        return middleware.id;
-      });
-
-      return {
-        page,
-        layouts,
-        middleware,
-      };
+  const pages = data.pages.map((page) => {
+    const layouts = data.layouts.filter((layout) => {
+      return page.path.startsWith(layout.path);
+    }).map((layout) => {
+      return layout.id;
     });
 
-    const manifest = {
-      pages,
-      layouts: data.layouts,
-      middleware: data.middleware,
-    };
+    const middleware = data.middleware.filter((middleware) => {
+      return page.path.startsWith(middleware.path);
+    }).map((middleware) => {
+      return middleware.id;
+    });
 
-    await write(basePath, manifest);
-    return `Manifest ".pages.ts" sucessfully created!`;
-  } catch (e) {
-    console.log(`Error occured: ${e.message}`);
-    return `Not able to load files from the "${basePath}" directory.`;
-  }
+    return {
+      page,
+      layouts,
+      middleware,
+    };
+  });
+
+  const manifest = {
+    pages,
+    layouts: data.layouts,
+    middleware: data.middleware,
+  };
+
+  await write(basePath, manifest);
 }
 
 /**
- * Scan a folder for page and layout files
+ * Scan a folder for page, middleware and layout files
  */
 async function scan(
   basePath: string,
@@ -73,6 +70,7 @@ async function scan(
   const pages: FileImport[] = [];
   const layouts: FileImport[] = [];
   const middleware: FileImport[] = [];
+
   let layoutIndex = 0;
   let pageIndex = 0;
   let middlewareIndex = 0;
@@ -140,25 +138,17 @@ export default {
 function imports(pages: FileImport[]): string {
   return pages.map((route) => {
     return `import * as ${route.id} from "../${route.path}/${route.fileName}";`;
-  }).join("\n");
+  }).join(EOL.LF);
 }
 
 function exports(path: string, pages: Page[]): string {
   return pages.map((page) => {
     return `"${page.page.path.replace(path, "") || "/"}": {
-    page: ${page.page.id},
-    layouts: [${page.layouts.join()}],
-    middleware: [${page.middleware.join()}]
+	page: ${page.page.id},
+	layouts: [${page.layouts.join()}],
+	middleware: [${page.middleware.join()}]
   },`;
-  }).join("\n  ");
-}
-
-export function pages() {
-  return {
-    names: ["pa", "pages"],
-    description: `Generate ".pages.ts" file`,
-    command,
-  };
+  }).join(`${EOL.LF}  `);
 }
 
 function sortImports(imports: FileImport[], basePath?: string): FileImport[] {
