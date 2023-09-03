@@ -7,6 +7,7 @@ import { pagesManifest } from "../pages/manifest.ts";
 import { pluginsManifest } from "../plugins/manifest.ts";
 import { scriptsManifest } from "../scripts/manifest.ts";
 import { BUILD_ID } from "../constants.ts";
+
 import { mapIslandsToEntryPoints } from "../islands/manifest.ts";
 
 export type ManifestTaskConfig = {
@@ -17,7 +18,7 @@ export type ManifestTaskConfig = {
   preBundle?: boolean;
 };
 
-export const ParcelManifest: (config?: ManifestTaskConfig) => Task = function (
+export const Manifest: (config?: ManifestTaskConfig) => Task = function (
   config?: ManifestTaskConfig,
 ) {
   return async () => {

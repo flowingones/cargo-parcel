@@ -1,2 +1,2 @@
 export { type PageLikeProps, Parcel, type ParcelTaskConfig } from "./parcel.ts";
-export { type ManifestTaskConfig, ParcelManifest } from "./parcel-manifest.ts";
+export { Manifest, type ManifestTaskConfig } from "./manifest.ts";
