@@ -42,8 +42,6 @@ export class Bundler {
   async bundle(isProd = true): Promise<Map<string, Uint8Array>> {
     await initialize();
 
-    console.log(`file://${Deno.cwd()}/import_map.json`);
-
     const result = await esbuild.build({
       plugins: [...denoPlugins({
         importMapURL: `file://${Deno.cwd()}/import_map.json`,
