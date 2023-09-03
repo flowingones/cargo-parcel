@@ -43,6 +43,7 @@ export class Bundler {
     await initialize();
 
     const result = await esbuild.build({
+      // @ts-ignore: Ignore plugin type error.
       plugins: [...denoPlugins({
         importMapURL: `file://${Deno.cwd()}/import_map.json`,
       })],
