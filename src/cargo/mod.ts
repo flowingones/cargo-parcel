@@ -1,8 +1,7 @@
-export { Bundler, bundlerAssetRoute } from "./bundle.ts";
 export { BUILD_ID } from "./constants.ts";
 export { getRequest, getServerContext, setServerContext } from "./context.ts";
-export { findIslands, type Island } from "./islands.ts";
-export { mappedPath } from "./path-mapping.ts";
+export { findIslands, type Island } from "./islands/islands.ts";
+export { mappedPath } from "./pages/path-mapping.ts";
 export {
   type AfterRenderTask,
   type AfterRenderTaskContext,
@@ -11,5 +10,5 @@ export {
   type PluginDefintions,
   plugins,
   type PluginTaskContext,
-} from "./plugin.ts";
+} from "./plugins/plugins.ts";
 export { Route } from "./route.ts";
