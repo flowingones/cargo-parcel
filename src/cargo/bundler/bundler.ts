@@ -6,7 +6,7 @@ let isInitialized: boolean | Promise<void> = false;
 
 async function initialize() {
   if (isInitialized === false) {
-    if (Deno.run !== undefined) {
+    if (Deno.run === undefined) {
       const wasmURL = new URL("./esbuild.v0.18.20.wasm", import.meta.url).href;
       isInitialized = fetch(wasmURL).then(async (r) => {
         const resp = new Response(r.body, {
