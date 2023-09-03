@@ -10,6 +10,6 @@
     "inspect/": "https://deno.land/x/cargo_inspect@0.1.56/"
   },
   "tasks": {
-    "check": "deno check src/mod.ts src/cargo/mod.ts src/cargo/page/mod.ts src/cargo/tasks/mod.ts src/hooks/mod.ts src/platform/browser/mod.ts src/platform/server/mod.ts src/state/mod.ts"
+    "check": "deno check src/mod.ts src/cargo/mod.ts src/cargo/pages/mod.ts src/cargo/tasks/mod.ts src/hooks/mod.ts src/platform/browser/mod.ts src/platform/server/mod.ts src/state/mod.ts"
   }
 }
