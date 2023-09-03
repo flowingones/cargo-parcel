@@ -4,9 +4,10 @@ import { htmlAttributes } from "./html.ts";
 import { getHead, Head } from "./head.ts";
 import { bodyAttributes } from "./body.ts";
 import { Footer, footer, getFooter } from "./footer.ts";
-import { findIslands, type Island } from "../islands.ts";
+import { findIslands, type Island } from "../islands/islands.ts";
 import { BUILD_ID } from "../constants.ts";
 import { PageLike } from "../tasks/parcel.ts";
+import { EOL } from "std/fs/mod.ts";
 
 interface PageFromProps {
   page: PageLike;
@@ -51,7 +52,7 @@ ${
               parse(island.path).name.replaceAll("-", "")
             } from "/_parcel/${BUILD_ID}/island-${
               parse(island.path).name
-            }.js";\n`
+            }.js";${EOL.LF}`
           ).join("")
         }
 launch([${

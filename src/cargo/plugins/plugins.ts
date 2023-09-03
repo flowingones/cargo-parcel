@@ -26,20 +26,32 @@ export interface PluginDefintions {
   };
 }
 
+export type PluginContext = {
+  assetsPath: string;
+};
+
 export interface Plugin {
   name: string;
-  plugin(): Promise<PluginDefintions> | PluginDefintions;
+  plugin(ctx: PluginContext): Promise<PluginDefintions> | PluginDefintions;
 }
 
-export async function plugins(plugins?: Plugin[]): Promise<PluginDefintions> {
+type PluginsConfig = {
+  assetsPath: string;
+  plugins?: Plugin[];
+};
+export async function plugins(
+  config: PluginsConfig,
+): Promise<PluginDefintions> {
   const scripts: PluginDefintions["scripts"] = [];
   let entryPoints: PluginDefintions["entryPoints"] = {};
   const beforeRender: BeforeRenderTask[] = [];
   const afterRender: AfterRenderTask[] = [];
 
-  if (plugins?.length) {
-    for (const plugin of plugins) {
-      const pluginDefinition = await plugin.plugin();
+  if (config.plugins?.length) {
+    for (const plugin of config.plugins) {
+      const pluginDefinition = await plugin.plugin(
+        { assetsPath: config.assetsPath },
+      );
       if (pluginDefinition.scripts) {
         scripts.push(...pluginDefinition.scripts);
       }
