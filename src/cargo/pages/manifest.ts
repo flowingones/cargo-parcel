@@ -1,6 +1,5 @@
 import { dirname, join } from "std/path/mod.ts";
 import { EOL, walk } from "std/fs/mod.ts";
-import { createManifestDirectory } from "../manifest/manifest.ts";
 
 interface FileImport {
   id: string;
@@ -130,9 +129,25 @@ export default {
   ${exports(basePath, manifest.pages)}
 };
 `;
-
-  await createManifestDirectory();
-  await Deno.writeTextFile(join(".manifest", ".pages.ts"), content);
+  try {
+    const existingManifest = await Deno.readTextFile(
+      join(".manifest", ".pages.ts"),
+    );
+    if (existingManifest !== content) {
+      return await Deno.writeTextFile(
+        join(".manifest", ".pages.ts"),
+        content,
+      );
+    }
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      return await Deno.writeTextFile(
+        join(".manifest", ".pages.ts"),
+        content,
+      );
+    }
+    throw e;
+  }
 }
 
 function imports(pages: FileImport[]): string {

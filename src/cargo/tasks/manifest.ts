@@ -1,6 +1,7 @@
 import { type Task } from "cargo/mod.ts";
 import { join } from "std/path/mod.ts";
 
+import { createManifestDirectory } from "../manifest/manifest.ts";
 import { type EntryPoints } from "../bundler/bundler.ts";
 import { islandsManifest } from "../islands/manifest.ts";
 import { pagesManifest } from "../pages/manifest.ts";
@@ -9,6 +10,7 @@ import { scriptsManifest } from "../scripts/manifest.ts";
 import { BUILD_ID } from "../constants.ts";
 
 import { mapIslandsToEntryPoints } from "../islands/manifest.ts";
+import { log } from "cargo/utils/mod.ts";
 
 export type ManifestTaskConfig = {
   prod: boolean;
@@ -18,10 +20,13 @@ export type ManifestTaskConfig = {
   preBundle?: boolean;
 };
 
-export const Manifest: (config?: ManifestTaskConfig) => Task = function (
-  config?: ManifestTaskConfig,
-) {
-  return async () => {
+export const Manifest: (config?: ManifestTaskConfig) => Promise<Task> =
+  async function (
+    config?: ManifestTaskConfig,
+  ) {
+    // create .manifest folder if not exists
+    await createManifestDirectory();
+
     // create pages manifest
     await pagesManifest({
       path: config?.pagesPath || "pages",
@@ -49,10 +54,13 @@ export const Manifest: (config?: ManifestTaskConfig) => Task = function (
       new URL("../../platform/browser/launch.ts", import.meta.url).href;
 
     // create scripts manifest
-    scriptsManifest({
+    await scriptsManifest({
       entryPoints: _entryPoints,
-      path: ".scripts",
       manifestPath: ".manifest",
+      manifestFileName: ".scripts.ts",
+      manifestAssetspath: ".scripts",
     });
+    return () => {
+      log("MANIFEST", "Manifest created!");
+    };
   };
-};
