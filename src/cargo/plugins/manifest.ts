@@ -10,11 +10,10 @@ type PluginsManifestConfig = {
 export async function pluginsManifest(
   config: PluginsManifestConfig,
 ): Promise<EntryPoints> {
-  const _parcelConfig: ParcelTaskConfig = await import(config.path);
-  const _plugins = _parcelConfig.plugins;
+  const _parcelConfig: ParcelTaskConfig = (await import(config.path)).default;
 
   return (await plugins({
-    plugins: _plugins,
+    plugins: _parcelConfig.plugins,
     assetsPath: config.assetsPath,
   })).entryPoints || {};
 }
