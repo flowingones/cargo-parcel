@@ -43,13 +43,14 @@ export const Parcel: (config?: ParcelTaskConfig) => Promise<Task> =
   async function (
     config?: ParcelTaskConfig,
   ) {
-    const _manifestPath = config?.manifestPath || ".manifest";
+    const _manifestPath = config?.manifestPath || join(Deno.cwd(), ".manifest");
 
     /*
     /* Pages
      */
     const _pages: Record<string, PageRoute> = config?.pages || (await import(
-      config?.pagesPath || join(Deno.cwd(), _manifestPath, ".pages.ts")
+      config?.pagesPath ||
+        new URL(`file://${join(_manifestPath, ".pages.ts")}`).href
     )).default;
 
     /*
@@ -57,20 +58,21 @@ export const Parcel: (config?: ParcelTaskConfig) => Promise<Task> =
      */
     const _islands: Record<string, JSX.Component> = config?.islands ||
       (await import(
-        config?.islandsPath || join(Deno.cwd(), _manifestPath, ".islands.ts")
+        config?.islandsPath ||
+          new URL(`file://${join(_manifestPath, ".islands.ts")}`).href
       )).default;
 
     /*
      * Scripts
      */
     const _scripts: string[] = config?.scripts || (await import(
-      config?.scriptsPath || join(Deno.cwd(), _manifestPath, ".scripts.ts")
+      config?.scriptsPath ||
+        new URL(`file://${join(_manifestPath, ".scripts.ts")}`).href
     )).default;
 
     for (const _script of _scripts) {
       const _file = await Deno.readFile(
         join(
-          Deno.cwd(),
           _manifestPath,
           config?.scriptsAssetsPath || ".scripts",
           _script,
