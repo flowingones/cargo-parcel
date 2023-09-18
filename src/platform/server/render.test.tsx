@@ -1,5 +1,5 @@
 import { tag } from "./deps.ts";
-import { assertEquals } from "std/testing/asserts.ts";
+import { assertEquals } from "std/assert/mod.ts";
 
 import { renderToString } from "./mod.ts";
 
