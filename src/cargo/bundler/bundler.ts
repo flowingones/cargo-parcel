@@ -56,7 +56,8 @@ export class Bundler {
       minify: isProd,
       platform: "neutral",
       write: false,
-      jsxFactory: "tag",
+      jsx: "automatic",
+      jsxImportSource: "parcel",
       absWorkingDir: Deno.cwd(),
       target: ["chrome99", "firefox99", "safari15"],
     });
