@@ -57,7 +57,7 @@ export interface VComponent<T> extends VBase {
   type: VType.COMPONENT;
   mode: VMode;
   id: symbol;
-  fn: (props: JSX.ElementProps) => JSX.Element;
+  fn: JSX.Component;
   props: JSX.ElementProps;
   ast: VNode<T>;
   unsubs: Unsubscribe[];

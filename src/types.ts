@@ -15,7 +15,7 @@ declare global {
       children: Node[];
     };
 
-    type Component = (props: ElementProps) => Element;
+    type Component = (props: ElementProps) => Node;
 
     type StateLike = {
       get: string | number;
