@@ -3,7 +3,7 @@ import "./types.ts";
 import { eventName, isEventName } from "./event.ts";
 
 export function tag(
-  tag: string | ((props: JSX.ElementProps) => JSX.Element),
+  tag: string | JSX.Component,
   attributes: JSX.IntrinsicElements | null,
   ...children: JSX.Node[] | JSX.Node[][]
 ): JSX.Element {
