@@ -7,7 +7,8 @@ let isInitialized: boolean | Promise<void> = false;
 async function initialize() {
   if (isInitialized === false) {
     if (Deno.run === undefined) {
-      const wasmURL = new URL("./esbuild.v0.18.20.wasm", import.meta.url).href;
+      const wasmURL =
+        new URL("https://deno.land/x/esbuild@v0.18.20/esbuild.wasm").href;
       isInitialized = fetch(wasmURL).then(async (r) => {
         const resp = new Response(r.body, {
           headers: { "Content-Type": "application/wasm" },

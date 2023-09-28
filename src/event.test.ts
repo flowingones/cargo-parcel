@@ -1,5 +1,5 @@
 import { eventName, isEventName } from "./event.ts";
-import { assertEquals } from "std/testing/asserts.ts";
+import { assertEquals } from "std/assert/mod.ts";
 
 Deno.test("Event: isEventName", () => {
   assertEquals(isEventName(""), false);
