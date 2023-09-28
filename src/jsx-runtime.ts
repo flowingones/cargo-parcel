@@ -3,7 +3,7 @@ import { tag } from "./tag.ts";
 function jsx(
   type: string | JSX.Component,
   args: JSX.ElementProps,
-  // TODO: Handle keys for track vnodes while updates
+  // TODO: Handle keys to track vnodes while updates
   _key: string,
 ) {
   const { children, ...props } = args;
