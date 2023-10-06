@@ -164,30 +164,12 @@ function createVComponent<T>(node: JSX.Element) {
 }
 
 function updateVComponent<T>(vComponent: VComponent<T>) {
-  const { type, id, mode, fn, ast, props, unsubs, ...rest } = vComponent;
-
-  const updatedVComponent: VComponent<T> = {
-    type,
-    id,
-    mode,
-    fn,
-    ast: undefined,
-    props,
-    unsubs: [],
-    ...rest,
-  };
-
-  scope.push(updatedVComponent);
-  unsubs.forEach((unsub) => unsub());
-  setSubscriber(
-    vComponentUpdater ? vComponentUpdater(updatedVComponent) : undefined,
-  );
-  const node = fn(props);
-  clearSubscriber();
+  scope.push(vComponent);
+  const node = vComponent.fn(vComponent.props);
   scope.shift();
 
-  updatedVComponent.ast = update(node, ast);
-  return updatedVComponent;
+  vComponent.ast = update(node, vComponent.ast);
+  return vComponent;
 }
 
 function update<T>(node: JSX.Node, vNode: VNode<T>): VNode<T> {
@@ -238,4 +220,21 @@ function isTextNode(
 
 function isEmptyNode(value: unknown): value is boolean | null {
   return (typeof value === "boolean" || value === null);
+}
+
+export function copy<T>(vNode: VNode<T>): VNode<T> {
+  if (vNode?.type === VType.COMPONENT) {
+    const copyAst = copy(vNode.ast);
+    return { ...vNode, ast: copyAst };
+  }
+  if (vNode?.type === VType.ELEMENT) {
+    const copyChildren = vNode.children?.map((child) => copy(child));
+    return { ...vNode, children: copyChildren };
+  }
+  if (vNode?.type === VType.TEXT) {
+    return {
+      ...vNode,
+    };
+  }
+  return vNode;
 }

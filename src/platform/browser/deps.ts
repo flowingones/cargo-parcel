@@ -1,4 +1,5 @@
 export {
+  copy,
   create,
   setComponentUpdater,
   type VComponent,
