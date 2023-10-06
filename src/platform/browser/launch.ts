@@ -5,6 +5,7 @@
 import { Unsubscribe } from "../../state/mod.ts";
 import { tag } from "../../tag.ts";
 import {
+  copy,
   create,
   diff,
   dispatch,
@@ -29,12 +30,11 @@ export function launch(islands: Island[]) {
   setComponentUpdater((vComponent: VComponent<unknown>) => {
     return {
       update: () => {
-        const vNode = <VComponent<Node>> create(vComponent);
+        const vNodeSnapshot = <VComponent<Node>> copy(vComponent);
         const changeSet = diff({
-          vNode,
-          previousVNode: <VComponent<Node>> vComponent,
+          vNode: <VComponent<Node>> create(vComponent),
+          previousVNode: <VComponent<Node>> vNodeSnapshot,
         });
-        vComponent.ast = vNode.ast;
         dispatch(changeSet);
       },
       unsubscribeCallback: (unsubscribe: Unsubscribe) => {

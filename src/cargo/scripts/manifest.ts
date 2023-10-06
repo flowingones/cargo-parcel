@@ -74,6 +74,7 @@ async function bundle(entryPoints: EntryPoints) {
     entryPoints,
     parse,
   );
+  // TODO: make is prod flag configurable
   const files = await bundler.bundle();
   bundler.stop();
   return files;
