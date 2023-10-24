@@ -26,12 +26,10 @@ export const Manifest: (config?: ManifestTaskConfig) => Promise<Task> =
   ) {
     await createManifestDirectory();
 
-    // Run the island command first to check
     const _islands = await islandsManifest({
       path: config?.islandsPath || "src",
     });
 
-    // create pages manifest
     await pagesManifest({
       path: config?.pagesPath || "pages",
     });
