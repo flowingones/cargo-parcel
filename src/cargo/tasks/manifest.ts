@@ -1,7 +1,6 @@
 import { type Task } from "cargo/mod.ts";
 import { join } from "std/path/mod.ts";
 
-import { createManifestDirectory } from "../manifest/manifest.ts";
 import { type EntryPoints } from "../bundler/bundler.ts";
 import { islandsManifest } from "../islands/manifest.ts";
 import { pagesManifest } from "../pages/manifest.ts";
@@ -11,6 +10,7 @@ import { BUILD_ID } from "../constants.ts";
 
 import { mapIslandsToEntryPoints } from "../islands/manifest.ts";
 import { log } from "cargo/utils/mod.ts";
+import { createManifestDirectory } from "../manifest/manifest.ts";
 
 export type ManifestTaskConfig = {
   prod: boolean;
@@ -24,17 +24,16 @@ export const Manifest: (config?: ManifestTaskConfig) => Promise<Task> =
   async function (
     config?: ManifestTaskConfig,
   ) {
-    // create .manifest folder if not exists
     await createManifestDirectory();
+
+    // Run the island command first to check
+    const _islands = await islandsManifest({
+      path: config?.islandsPath || "src",
+    });
 
     // create pages manifest
     await pagesManifest({
       path: config?.pagesPath || "pages",
-    });
-
-    // create island manifest
-    const _islands = await islandsManifest({
-      path: config?.islandsPath || "src",
     });
 
     const _entryPoints: EntryPoints = mapIslandsToEntryPoints(_islands);

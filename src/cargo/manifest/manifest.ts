@@ -1,7 +1,6 @@
 export async function createManifestDirectory() {
   try {
-    await Deno.remove(".manifest", { recursive: true });
-    await Deno.mkdir(".manifest");
+    await Deno.stat(".manifest");
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
       await Deno.mkdir(".manifest");
