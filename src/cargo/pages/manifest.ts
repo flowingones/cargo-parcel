@@ -148,15 +148,23 @@ export default {
 }
 
 function imports(pages: FileImport[], type: string): string {
-  return pages.map((route) => {
-    return `// ${type} imports
-    import * as ${route.id} from "../${route.path}/${route.fileName}";`;
-  }).join(EOL.LF);
+  return pages.length
+    ? [
+      `// ${type} imports`,
+      ...pages.map((route) => {
+        return `import * as ${route.id} from "../${route.path}/${route.fileName}";`;
+      }),
+    ].join(EOL.LF)
+    : "";
 }
 
 function exports(path: string, pages: Page[]): string {
   return pages.map((page) => {
-    return `"${page.page.path.replace(path, "") || "/"}": {
+    return `"${
+      removeGroupFrom(
+        removePathFrom(page.page.path, path),
+      ) || "/"
+    }": {
     page: ${page.page.id},
     layouts: [${page.layouts.join()}],
     middleware: [${page.middleware.join()}]
@@ -180,4 +188,12 @@ function sortImports(imports: FileImport[], basePath?: string): FileImport[] {
     }
     return 1;
   });
+}
+
+function removeGroupFrom(route: string): string {
+  return route.replace(/\/\([\w-]+\)/g, "");
+}
+
+function removePathFrom(route: string, path: string): string {
+  return route.replace(path, "");
 }
