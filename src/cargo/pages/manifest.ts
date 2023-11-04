@@ -167,7 +167,7 @@ function exports(path: string, pages: Page[]): string {
     }": {
     page: ${page.page.id},
     layouts: [${page.layouts.join()}],
-    middleware: [${page.middleware.join()}]
+    middleware: [${page.middleware.reverse().join()}]
   },`;
   }).join(`${EOL.LF}  `);
 }
